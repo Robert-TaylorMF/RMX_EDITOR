@@ -1,0 +1,25 @@
+{
+    "bases": [
+      {
+        "nome": "Produção",
+        "server": "129.200.19.30",
+        "database": "CorporeRM",
+        "user": "sa",
+        "password": "texpAr_1672#"
+      },
+      {
+        "nome": "Homologação",
+        "server": "129.200.19.30",
+        "database": "CorporeRM_HOMOLOGA",
+        "user": "sa",
+        "password": "texpAr_1672#"
+      },
+      {
+        "nome": "Teste",
+        "server": "129.200.19.30",
+        "database": "CorporeRM_TESTE",
+        "user": "sa",
+        "password": "texpAr_1672#"
+      }
+    ]
+  }
