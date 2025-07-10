@@ -13,6 +13,39 @@ import tkinter as tk
 from PIL import Image, ImageTk, ImageSequence
 import xml.dom.minidom
 import time
+import webbrowser
+
+# === Verifica se possui o driver odbc necessário e se não existe redireciona para pagina de download ===
+
+def driver_disponivel(nome_driver):
+    return nome_driver in pyodbc.drivers()
+
+def verificar_driver_sql():
+    driver_necessario = "ODBC Driver 17 for SQL Server"
+    drivers_disponiveis = pyodbc.drivers()
+
+    if driver_necessario in drivers_disponiveis:
+        print(f"Driver encontrado: {driver_necessario}")
+        return True
+    else:
+        print(f"Driver ausente: {driver_necessario}")
+        mostrar_aviso_driver(driver_necessario)
+        return False
+
+def mostrar_aviso_driver(driver_faltante):
+    def abrir_link():
+        webbrowser.open("https://learn.microsoft.com/sql/connect/odbc/download-odbc-driver-for-sql-server")
+
+    root = tk.Tk()
+    root.withdraw()  # Esconde janela principal
+
+    resposta = messagebox.askyesno(
+        "Driver ODBC ausente",
+        f"O driver '{driver_faltante}' não está instalado nesta máquina.\n\nDeseja abrir o site oficial para baixar?"
+    )
+
+    if resposta:
+        abrir_link()
 
 # === verifica se há uma nova versão disponível ===
 def verificar_atualizacao(versao_local="1.0"):
@@ -300,6 +333,12 @@ def mostrar_splash():
 
 # === Janela principal ===
 mostrar_splash()
+
+# === Verificação antes de abrir a interface ===
+if not verificar_driver_sql():
+    exit()
+
+# === Carrega interface principal ===
 root = tk.Tk()
 
 # === Resolve caminho mesmo quando empacotado com PyInstaller ===
