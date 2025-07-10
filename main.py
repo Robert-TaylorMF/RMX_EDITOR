@@ -41,7 +41,7 @@ def mostrar_aviso_driver(driver_faltante):
 
     resposta = messagebox.askyesno(
         "Driver ODBC ausente",
-        f"O driver '{driver_faltante}' não está instalado nesta máquina.\n\nDeseja abrir o site oficial para baixar?"
+        f"O driver '{driver_faltante}' não está instalado nesta máquina, é recomendado a sua instalação.\n\nDeseja abrir o site oficial para baixar?"
     )
 
     if resposta:
@@ -206,7 +206,7 @@ def salvar_xml():
             return  # sucesso, sai da função
 
         except Exception as e:
-            print(f"⚠️ Falha com driver {driver}: {e}")
+            print(f"Falha com driver {driver}: {e}")
 
     messagebox.showerror("Erro de conexão", "Não foi possível salvar o XML.\nVerifique os drivers ODBC disponíveis.")
 
@@ -368,10 +368,6 @@ def mostrar_splash():
 # === Janela principal ===
 mostrar_splash()
 
-# === Verificação antes de abrir a interface ===
-if not verificar_driver_sql():
-    exit()
-
 # === Carrega interface principal ===
 root = tk.Tk()
 
@@ -380,7 +376,7 @@ if not getattr(sys, 'frozen', False):
     caminho_icone = os.path.join(os.path.dirname(__file__), "xmleditor.ico")
     root.iconbitmap(caminho_icone)
 
-root.title("XMLEasy RM – Editor de XML eSocial")
+root.title("XMLEditor RM – Editor de XML eSocial")
 root.geometry("1080x740")
 
 # === Barra superior: seleção de base, ID e botões principais ===
@@ -405,7 +401,7 @@ combo_base.current(0)
 tk.Button(frame1, text="Conectar", command=conectar_base).grid(row=0, column=2, padx=5)
 
 tk.Label(frame1, text="ID do Evento:").grid(row=0, column=3)
-entry_id = tk.Entry(frame1, width=15)
+entry_id = tk.Entry(frame1, width=45)
 entry_id.grid(row=0, column=4)
 tk.Button(frame1, text="Carregar", command=carregar_xml).grid(row=0, column=5, padx=5)
 tk.Button(frame1, text="Salvar", command=salvar_xml).grid(row=0, column=6, padx=5)
@@ -557,8 +553,8 @@ tk.Button(frame2, text="Substituir", command=substituir_proxima).grid(row=0, col
 tk.Button(frame2, text="Substituir todos", command=substituir_todos).grid(row=0, column=6, padx=5)
 
 # === Editor XML ===
-text_xml = scrolledtext.ScrolledText(root, wrap=tk.WORD, width=130, height=30)
-text_xml.pack(padx=10, pady=10)
+text_xml = text_xml = scrolledtext.ScrolledText(root, wrap=tk.WORD)
+text_xml.pack(padx=10, pady=10, fill="both", expand=True)
 
 # === Barra de status ===
 status_var = tk.StringVar()
@@ -581,18 +577,18 @@ def mostrar_sobre():
 
     tk.Label(sobre, text="XMLEditor RM", font=("Segoe UI", 16, "bold"), fg="#4fc3f7", bg="#1e1e1e").pack(pady=(20, 5))
     tk.Label(sobre, text="Editor de eventos eSocial com backup inteligente", fg="#dddddd", bg="#1e1e1e").pack(pady=2)
-    tk.Label(sobre, text="Versão: 1.0.0", fg="#bbbbbb", bg="#1e1e1e").pack(pady=2)
+    tk.Label(sobre, text="Versão: 1.1", fg="#bbbbbb", bg="#1e1e1e").pack(pady=2)
     tk.Label(sobre, text="Desenvolvido por: Robert Taylor de M. Ferreira", fg="#81c784", bg="#1e1e1e").pack(pady=10)
     tk.Label(sobre, text="© 2025", font=("Segoe UI", 8), fg="#888888", bg="#1e1e1e").pack(pady=0)
 
     tk.Button(sobre, text="Ver no GitHub", command=abrir_github, bg="#2e2e2e", fg="#00afff").pack(pady=(15, 5))
     tk.Button(sobre, text="Fechar", command=sobre.destroy, bg="#2e2e2e", fg="white").pack()
 
-# === Botão sobre ===
-tk.Button(frame1, text="🛈", command=mostrar_sobre).grid(row=0, column=9, padx=400)
-
 # === Botão verificar atualizações ===
 tk.Button(root, text="Verificar Atualização", command=verificar_atualizacao).pack(pady=10)
+
+# === Botão sobre ===
+tk.Button(root, text="Sobre", command=mostrar_sobre).pack(pady=10)
 
 # === Iniciar no modo claro ===
 def aplicar_tema(escuro=True):
@@ -630,4 +626,5 @@ def aplicar_tema(escuro=True):
     text_xml.tag_config("destacado", background=destaque)
 
 # === Iniciar aplicação ===
+verificar_driver_sql()
 root.mainloop()
