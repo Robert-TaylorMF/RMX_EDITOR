@@ -379,7 +379,7 @@ if not getattr(sys, 'frozen', False):
     caminho_icone = os.path.join(os.path.dirname(__file__), "xmleditor.ico")
     root.iconbitmap(caminho_icone)
 
-root.title("XMLEditor RM – Editor de XML eSocial")
+root.title(f"XMLEditor RM – Editor de XML eSocial v{versao}")
 root.geometry("1080x740")
 
 # === Barra superior: seleção de base, ID e botões principais ===
@@ -580,7 +580,7 @@ def mostrar_sobre():
 
     tk.Label(sobre, text="XMLEditor RM", font=("Segoe UI", 16, "bold"), fg="#4fc3f7", bg="#1e1e1e").pack(pady=(20, 5))
     tk.Label(sobre, text="Editor de eventos eSocial com backup inteligente", fg="#dddddd", bg="#1e1e1e").pack(pady=2)
-    tk.Label(sobre, text="Versão: {versao}", fg="#bbbbbb", bg="#1e1e1e").pack(pady=2)
+    tk.Label(sobre, text=f"Versão: {versao}", fg="#bbbbbb", bg="#1e1e1e").pack(pady=2)
     tk.Label(sobre, text="Desenvolvido por: Robert Taylor de M. Ferreira", fg="#81c784", bg="#1e1e1e").pack(pady=10)
     tk.Label(sobre, text="© 2025", font=("Segoe UI", 8), fg="#888888", bg="#1e1e1e").pack(pady=0)
 

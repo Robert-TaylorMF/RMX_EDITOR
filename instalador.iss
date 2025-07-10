@@ -1,6 +1,6 @@
 [Setup]
 AppName=XMLEditor RM
-AppVersion=1.0
+AppVersion=1.2
 AppPublisher=Robert Taylor de M. Ferreira
 DefaultDirName={pf}\XMLEditor RM
 DefaultGroupName=XMLEditor RM
