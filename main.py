@@ -9,7 +9,10 @@ import difflib
 from datetime import datetime
 import tkinter as tk
 from tkinter import ttk, messagebox, scrolledtext
+import tkinter as tk
+from PIL import Image, ImageTk, ImageSequence
 import xml.dom.minidom
+import time
 
 # === verifica se há uma nova versão disponível ===
 def verificar_atualizacao(versao_local="1.0"):
@@ -27,6 +30,16 @@ def verificar_atualizacao(versao_local="1.0"):
 
 modo_escuro_ativo = False;
 posicao_substituicao = "1.0"
+
+# === Trabalhar com caminho relativo das imagens ===
+def obter_caminho(imagem_relativa):
+    if getattr(sys, 'frozen', False):
+        # Executável .exe via PyInstaller
+        caminho_base = sys._MEIPASS
+    else:
+        # Execução via script .py
+        caminho_base = os.path.dirname(__file__)
+    return os.path.join(caminho_base, imagem_relativa)
 
 # === Carregar bases de dados do arquivo JSON ===
 with open("bases.json", "r", encoding="utf-8") as f:
@@ -253,8 +266,40 @@ def aplicar_tema(escuro=True):
     text_xml.tag_config("valor", foreground="#98c379")
     text_xml.tag_config("destacado", background=destaque) 
 
+# === Splash Screen ===
+def mostrar_splash():
+    splash = tk.Tk()
+    splash.overrideredirect(True)
+    splash.configure(bg="#1e1e1e")
+
+    largura, altura = 400, 250
+    pos_x = splash.winfo_screenwidth() // 2 - largura // 2
+    pos_y = splash.winfo_screenheight() // 2 - altura // 2
+    splash.geometry(f"{largura}x{altura}+{pos_x}+{pos_y}")
+
+    # Carrega o logo PNG do app
+    caminho_logo = obter_caminho("recursos/logo_splash.png")
+    imagem_logo = Image.open(caminho_logo).resize((100, 100))
+    img_logo = ImageTk.PhotoImage(imagem_logo)
+
+    label_logo = tk.Label(splash, image=img_logo, bg="#1e1e1e")
+    label_logo.image = img_logo
+    label_logo.pack(pady=15)
+
+    # Título e mensagem
+    tk.Label(splash, text="XMLEditor RM", font=("Segoe UI", 18, "bold"),
+             bg="#1e1e1e", fg="#00ccff").pack()
+    
+    tk.Label(splash, text="Inicializando ambiente XML...",
+             font=("Segoe UI", 10), bg="#1e1e1e", fg="white").pack(pady=5)
+
+    splash.update()
+    time.sleep(2.5)
+    splash.destroy()
+
 
 # === Janela principal ===
+mostrar_splash()
 root = tk.Tk()
 
 # === Resolve caminho mesmo quando empacotado com PyInstaller ===
