@@ -118,63 +118,97 @@ def carregar_xml():
     if not base_selecionada:
         messagebox.showwarning("Base", "Selecione uma base.")
         return
+
     evento_id = entry_id.get()
     if not evento_id:
         messagebox.showwarning("ID", "Informe o ID do evento.")
         return
-    try:
-        conn = pyodbc.connect(
-            f"DRIVER={{ODBC Driver 17 for SQL Server}};"
-            f"SERVER={base_selecionada['server']};"
-            f"DATABASE={base_selecionada['database']};"
-            f"UID={base_selecionada['user']};PWD={base_selecionada['password']}"
-        )
-        cursor = conn.cursor()
-        cursor.execute("SELECT mensagem FROM PESOCIALEVENTOS WHERE id = ?", evento_id)
-        row = cursor.fetchone()
-        conn.close()
 
-        if row:
-            xml = formatar_xml(row[0])
-            text_xml.delete("1.0", tk.END)
-            text_xml.insert(tk.END, xml)
-            realcar_sintaxe_xml()
-            status_var.set(f"XML do evento {evento_id} carregado.")
-        else:
-            messagebox.showinfo("Não encontrado", f"Nenhum evento com ID {evento_id}.")
-    except Exception as e:
-        messagebox.showerror("Erro ao buscar", str(e))
+    # Drivers que podem funcionar (ordem de preferência)
+    drivers_preferidos = [
+        "ODBC Driver 17 for SQL Server",
+        "SQL Server Native Client 11.0"
+    ]
+
+    # Tenta conexão com fallback entre os drivers
+    for driver in drivers_preferidos:
+        try:
+            conn = pyodbc.connect(
+                f"DRIVER={{{driver}}};"
+                f"SERVER={base_selecionada['server']};"
+                f"DATABASE={base_selecionada['database']};"
+                f"UID={base_selecionada['user']};"
+                f"PWD={base_selecionada['password']}"
+            )
+            cursor = conn.cursor()
+            cursor.execute("SELECT mensagem FROM PESOCIALEVENTOS WHERE id = ?", evento_id)
+            row = cursor.fetchone()
+            conn.close()
+
+            if row:
+                xml = formatar_xml(row[0])
+                text_xml.delete("1.0", tk.END)
+                text_xml.insert(tk.END, xml)
+                realcar_sintaxe_xml()
+                status_var.set(f"XML do evento {evento_id} carregado.")
+            else:
+                messagebox.showinfo("Não encontrado", f"Nenhum evento com ID {evento_id}.")
+            return  # sucesso, sai da função
+
+        except Exception as e:
+            print(f"⚠️ Falha com {driver}: {e}")
+
+    # Se nenhum driver funcionou
+    messagebox.showerror("Erro de conexão", "Não foi possível conectar ao banco.\nVerifique os drivers ODBC disponíveis.")
 
 # === Salvar alterações no XML e aplicar realce ===
 def salvar_xml():
     if not base_selecionada:
         messagebox.showwarning("Base", "Selecione uma base.")
         return
+
     evento_id = entry_id.get()
     novo_xml = text_xml.get("1.0", tk.END).strip()
     if not evento_id or not novo_xml:
         messagebox.showwarning("Atenção", "ID e XML são obrigatórios.")
         return
-    try:
-        conn = pyodbc.connect(
-            f"DRIVER={{ODBC Driver 17 for SQL Server}};"
-            f"SERVER={base_selecionada['server']};"
-            f"DATABASE={base_selecionada['database']};"
-            f"UID={base_selecionada['user']};PWD={base_selecionada['password']}"
-        )
-        cursor = conn.cursor()
-        cursor.execute("SELECT mensagem FROM PESOCIALEVENTOS WHERE id = ?", evento_id)
-        row = cursor.fetchone()
-        if row:
-            xml_antigo = row[0]
-            salvar_backup(xml_antigo, evento_id)
-        cursor.execute("UPDATE PESOCIALEVENTOS SET mensagem = ? WHERE id = ?", novo_xml, evento_id)
-        conn.commit()
-        conn.close()
-        messagebox.showinfo("Sucesso", "XML atualizado com sucesso.")
-        realcar_sintaxe_xml()
-    except Exception as e:
-        messagebox.showerror("Erro ao salvar", str(e))
+
+    drivers_preferidos = [
+        "ODBC Driver 17 for SQL Server",
+        "SQL Server Native Client 11.0"
+    ]
+
+    for driver in drivers_preferidos:
+        try:
+            conn = pyodbc.connect(
+                f"DRIVER={{{driver}}};"
+                f"SERVER={base_selecionada['server']};"
+                f"DATABASE={base_selecionada['database']};"
+                f"UID={base_selecionada['user']};"
+                f"PWD={base_selecionada['password']}"
+            )
+            cursor = conn.cursor()
+            cursor.execute("SELECT mensagem FROM PESOCIALEVENTOS WHERE id = ?", evento_id)
+            row = cursor.fetchone()
+            if row:
+                xml_antigo = row[0]
+                salvar_backup(xml_antigo, evento_id)
+
+            cursor.execute(
+                "UPDATE PESOCIALEVENTOS SET mensagem = ? WHERE id = ?",
+                novo_xml, evento_id
+            )
+            conn.commit()
+            conn.close()
+
+            messagebox.showinfo("Sucesso", "XML atualizado com sucesso.")
+            realcar_sintaxe_xml()
+            return  # sucesso, sai da função
+
+        except Exception as e:
+            print(f"⚠️ Falha com driver {driver}: {e}")
+
+    messagebox.showerror("Erro de conexão", "Não foi possível salvar o XML.\nVerifique os drivers ODBC disponíveis.")
 
 # === Realce de sintaxe XML com cores ===
 def realcar_sintaxe_xml():
