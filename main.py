@@ -15,6 +15,12 @@ import xml.dom.minidom
 import time
 import webbrowser
 
+# === Inicialização de variaveis ===
+
+modo_escuro_ativo = False;
+posicao_substituicao = "1.0"
+versao = "1.0"
+
 # === Verifica se possui o driver odbc necessário e se não existe redireciona para pagina de download ===
 
 def driver_disponivel(nome_driver):
@@ -48,7 +54,7 @@ def mostrar_aviso_driver(driver_faltante):
         abrir_link()
 
 # === verifica se há uma nova versão disponível ===
-def verificar_atualizacao(versao_local="1.0"):
+def verificar_atualizacao(versao_local=versao):
     try:
         url = "https://raw.githubusercontent.com/Robert-TaylorMF/RMX_EDITOR/main/versao.txt"
         resposta = urllib.request.urlopen(url, timeout=3)
@@ -60,9 +66,6 @@ def verificar_atualizacao(versao_local="1.0"):
             messagebox.showinfo("XMLEditor RM", "Você está usando a versão mais recente.")
     except:
         pass  # Silencioso em caso de erro offline
-
-modo_escuro_ativo = False;
-posicao_substituicao = "1.0"
 
 # === Trabalhar com caminho relativo das imagens ===
 def obter_caminho(imagem_relativa):
