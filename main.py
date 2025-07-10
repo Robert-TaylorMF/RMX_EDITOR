@@ -19,7 +19,7 @@ import webbrowser
 
 modo_escuro_ativo = False;
 posicao_substituicao = "1.0"
-versao = "1.0"
+versao = "1.2"
 
 # === Verifica se possui o driver odbc necessário e se não existe redireciona para pagina de download ===
 
@@ -580,7 +580,7 @@ def mostrar_sobre():
 
     tk.Label(sobre, text="XMLEditor RM", font=("Segoe UI", 16, "bold"), fg="#4fc3f7", bg="#1e1e1e").pack(pady=(20, 5))
     tk.Label(sobre, text="Editor de eventos eSocial com backup inteligente", fg="#dddddd", bg="#1e1e1e").pack(pady=2)
-    tk.Label(sobre, text="Versão: 1.1", fg="#bbbbbb", bg="#1e1e1e").pack(pady=2)
+    tk.Label(sobre, text="Versão: {versao}", fg="#bbbbbb", bg="#1e1e1e").pack(pady=2)
     tk.Label(sobre, text="Desenvolvido por: Robert Taylor de M. Ferreira", fg="#81c784", bg="#1e1e1e").pack(pady=10)
     tk.Label(sobre, text="© 2025", font=("Segoe UI", 8), fg="#888888", bg="#1e1e1e").pack(pady=0)
 
