@@ -1,3 +1,5 @@
+from conexao import obter_conexao, driver_disponivel, verificar_driver_sql, mostrar_aviso_driver
+
 import urllib.request
 from tkinter import messagebox
 import json
@@ -17,41 +19,9 @@ import webbrowser
 
 # === Inicialização de variaveis ===
 
-modo_escuro_ativo = False;
+modo_escuro_ativo = False
 posicao_substituicao = "1.0"
 versao = "1.2"
-
-# === Verifica se possui o driver odbc necessário e se não existe redireciona para pagina de download ===
-
-def driver_disponivel(nome_driver):
-    return nome_driver in pyodbc.drivers()
-
-def verificar_driver_sql():
-    driver_necessario = "ODBC Driver 17 for SQL Server"
-    drivers_disponiveis = pyodbc.drivers()
-
-    if driver_necessario in drivers_disponiveis:
-        print(f"Driver encontrado: {driver_necessario}")
-        return True
-    else:
-        print(f"Driver ausente: {driver_necessario}")
-        mostrar_aviso_driver(driver_necessario)
-        return False
-
-def mostrar_aviso_driver(driver_faltante):
-    def abrir_link():
-        webbrowser.open("https://learn.microsoft.com/sql/connect/odbc/download-odbc-driver-for-sql-server")
-
-    root = tk.Tk()
-    root.withdraw()  # Esconde janela principal
-
-    resposta = messagebox.askyesno(
-        "Driver ODBC ausente",
-        f"O driver '{driver_faltante}' não está instalado nesta máquina, é recomendado a sua instalação.\n\nDeseja abrir o site oficial para baixar?"
-    )
-
-    if resposta:
-        abrir_link()
 
 # === verifica se há uma nova versão disponível ===
 def verificar_atualizacao(versao_local=versao):
@@ -136,13 +106,7 @@ def carregar_xml():
     # Tenta conexão com fallback entre os drivers
     for driver in drivers_preferidos:
         try:
-            conn = pyodbc.connect(
-                f"DRIVER={{{driver}}};"
-                f"SERVER={base_selecionada['server']};"
-                f"DATABASE={base_selecionada['database']};"
-                f"UID={base_selecionada['user']};"
-                f"PWD={base_selecionada['password']}"
-            )
+            conn = obter_conexao(base_selecionada)
             cursor = conn.cursor()
             cursor.execute("SELECT mensagem FROM PESOCIALEVENTOS WHERE id = ?", evento_id)
             row = cursor.fetchone()
@@ -183,13 +147,7 @@ def salvar_xml():
 
     for driver in drivers_preferidos:
         try:
-            conn = pyodbc.connect(
-                f"DRIVER={{{driver}}};"
-                f"SERVER={base_selecionada['server']};"
-                f"DATABASE={base_selecionada['database']};"
-                f"UID={base_selecionada['user']};"
-                f"PWD={base_selecionada['password']}"
-            )
+            conn = obter_conexao(base_selecionada)
             cursor = conn.cursor()
             cursor.execute("SELECT mensagem FROM PESOCIALEVENTOS WHERE id = ?", evento_id)
             row = cursor.fetchone()
