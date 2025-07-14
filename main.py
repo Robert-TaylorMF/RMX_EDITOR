@@ -2,6 +2,7 @@ from conexao import obter_conexao, driver_disponivel, mostrar_aviso_driver
 from verificador import verificar_driver_sql, verificar_atualizacao
 from xml_operacoes import carregar_xml, salvar_xml
 from splash import mostrar_splash
+from sobre import mostrar_sobre
 from utilitarios import (
     formatar_xml, salvar_backup, realcar_sintaxe_xml,
     buscar_texto, substituir_proxima, substituir_todos
@@ -492,6 +493,7 @@ entry_substituir.grid(row=0, column=3, padx=5)
 tk.Button(frame2, text="Localizar", command=lambda: buscar_texto(entry_busca, text_xml)).grid(row=0, column=4, padx=5)
 tk.Button(frame2, text="Substituir", command=lambda: (substituir_posicao := substituir_proxima(entry_busca, entry_substituir, text_xml, substituir_posicao))).grid(row=0, column=5, padx=5)
 tk.Button(frame2, text="Substituir todos", command=lambda: substituir_todos(entry_busca, entry_substituir, text_xml)).grid(row=0, column=6, padx=5)
+
 # === Editor XML ===
 text_xml = text_xml = scrolledtext.ScrolledText(root, wrap=tk.WORD)
 text_xml.pack(padx=10, pady=10, fill="both", expand=True)
@@ -501,34 +503,11 @@ status_var = tk.StringVar()
 status_label = tk.Label(root, textvariable=status_var, fg="blue")
 status_label.pack()
 
-# === Sobre ===
-
-import webbrowser
-
-def abrir_github():
-    webbrowser.open_new("https://github.com/Robert-TaylorMF")
-
-def mostrar_sobre():
-    sobre = tk.Toplevel(root)
-    sobre.title("Sobre o XMLEditor RM")
-    sobre.geometry("400x270")
-    sobre.resizable(False, False)
-    sobre.configure(bg="#1e1e1e")
-
-    tk.Label(sobre, text="XMLEditor RM", font=("Segoe UI", 16, "bold"), fg="#4fc3f7", bg="#1e1e1e").pack(pady=(20, 5))
-    tk.Label(sobre, text="Editor de eventos eSocial com backup inteligente", fg="#dddddd", bg="#1e1e1e").pack(pady=2)
-    tk.Label(sobre, text=f"Versão: {versao}", fg="#bbbbbb", bg="#1e1e1e").pack(pady=2)
-    tk.Label(sobre, text="Desenvolvido por: Robert Taylor de M. Ferreira", fg="#81c784", bg="#1e1e1e").pack(pady=10)
-    tk.Label(sobre, text="© 2025", font=("Segoe UI", 8), fg="#888888", bg="#1e1e1e").pack(pady=0)
-
-    tk.Button(sobre, text="Ver no GitHub", command=abrir_github, bg="#2e2e2e", fg="#00afff").pack(pady=(15, 5))
-    tk.Button(sobre, text="Fechar", command=sobre.destroy, bg="#2e2e2e", fg="white").pack()
-
 # === Botão verificar atualizações ===
 tk.Button(root, text="Verificar Atualização", command=lambda: verificar_atualizacao(versao)).pack(pady=10)
 
 # === Botão sobre ===
-tk.Button(root, text="Sobre", command=mostrar_sobre).pack(pady=10)
+tk.Button(root, text="Sobre", command=lambda: mostrar_sobre(root, versao)).pack(pady=10)
 
 # === Iniciar no modo claro ===
 def aplicar_tema(escuro=True):
