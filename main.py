@@ -1,4 +1,5 @@
 from conexao import obter_conexao, driver_disponivel, verificar_driver_sql, mostrar_aviso_driver
+from xml_operacoes import carregar_xml, salvar_xml
 
 import urllib.request
 from tkinter import messagebox
@@ -364,8 +365,12 @@ tk.Button(frame1, text="Conectar", command=conectar_base).grid(row=0, column=2, 
 tk.Label(frame1, text="ID do Evento:").grid(row=0, column=3)
 entry_id = tk.Entry(frame1, width=45)
 entry_id.grid(row=0, column=4)
-tk.Button(frame1, text="Carregar", command=carregar_xml).grid(row=0, column=5, padx=5)
-tk.Button(frame1, text="Salvar", command=salvar_xml).grid(row=0, column=6, padx=5)
+tk.Button(frame1, text="Carregar", command=lambda: carregar_xml(
+    base_selecionada, entry_id.get(), text_xml, status_var
+)).grid(row=0, column=5, padx=5)
+tk.Button(frame1, text="Salvar", command=lambda: salvar_xml(
+    base_selecionada, entry_id.get(), text_xml.get("1.0", tk.END).strip(), text_xml
+)).grid(row=0, column=6, padx=5)
 
 def abrir_backup():
     pasta = "backups_xml"
