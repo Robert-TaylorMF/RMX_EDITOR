@@ -4,6 +4,8 @@ from tkinter import messagebox
 import tkinter as tk
 import webbrowser
 
+# === Verifica se possui o driver odbc necessário e se não existe redireciona para pagina de download ===
+
 def verificar_driver_sql():
     driver_necessario = "ODBC Driver 17 for SQL Server"
     drivers_disponiveis = pyodbc.drivers()
@@ -28,6 +30,10 @@ def mostrar_aviso_driver(driver_faltante):
     if resposta:
         abrir_link()
 
+def driver_disponivel(nome_driver):
+    return nome_driver in pyodbc.drivers()
+    
+# Verifica se tem atualizações disponíveis para o sistema   
 def verificar_atualizacao(versao_local):
     try:
         url = "https://raw.githubusercontent.com/Robert-TaylorMF/RMX_EDITOR/main/versao.txt"
