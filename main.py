@@ -1,10 +1,12 @@
 from conexao import obter_conexao, driver_disponivel, mostrar_aviso_driver
 from verificador import verificar_driver_sql, verificar_atualizacao
 from xml_operacoes import carregar_xml, salvar_xml
+from splash import mostrar_splash
 from utilitarios import (
     formatar_xml, salvar_backup, realcar_sintaxe_xml,
     buscar_texto, substituir_proxima, substituir_todos
 )
+
 
 import urllib.request
 from tkinter import messagebox
@@ -299,38 +301,6 @@ def aplicar_tema(escuro=True):
     text_xml.tag_config("atributo", foreground="#d19a66")
     text_xml.tag_config("valor", foreground="#98c379")
     text_xml.tag_config("destacado", background=destaque) 
-
-# === Splash Screen ===
-def mostrar_splash():
-    splash = tk.Tk()
-    splash.overrideredirect(True)
-    splash.configure(bg="#1e1e1e")
-
-    largura, altura = 400, 250
-    pos_x = splash.winfo_screenwidth() // 2 - largura // 2
-    pos_y = splash.winfo_screenheight() // 2 - altura // 2
-    splash.geometry(f"{largura}x{altura}+{pos_x}+{pos_y}")
-
-    # Carrega o logo PNG do app
-    caminho_logo = obter_caminho("recursos/logo_splash.png")
-    imagem_logo = Image.open(caminho_logo).resize((100, 100))
-    img_logo = ImageTk.PhotoImage(imagem_logo)
-
-    label_logo = tk.Label(splash, image=img_logo, bg="#1e1e1e")
-    label_logo.image = img_logo
-    label_logo.pack(pady=15)
-
-    # Título e mensagem
-    tk.Label(splash, text="XMLEditor RM", font=("Segoe UI", 18, "bold"),
-             bg="#1e1e1e", fg="#00ccff").pack()
-    
-    tk.Label(splash, text="Inicializando ambiente XML...",
-             font=("Segoe UI", 10), bg="#1e1e1e", fg="white").pack(pady=5)
-
-    splash.update()
-    time.sleep(2.5)
-    splash.destroy()
-
 
 # === Janela principal ===
 mostrar_splash()
