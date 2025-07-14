@@ -1,5 +1,9 @@
 from conexao import obter_conexao, driver_disponivel, verificar_driver_sql, mostrar_aviso_driver
 from xml_operacoes import carregar_xml, salvar_xml
+from utilitarios import (
+    formatar_xml, salvar_backup, realcar_sintaxe_xml,
+    buscar_texto, substituir_proxima, substituir_todos
+)
 
 import urllib.request
 from tkinter import messagebox
@@ -21,7 +25,7 @@ import webbrowser
 # === Inicialização de variaveis ===
 
 modo_escuro_ativo = False
-posicao_substituicao = "1.0"
+substituir_posicao = "1.0"
 versao = "1.2"
 
 # === verifica se há uma nova versão disponível ===
@@ -514,10 +518,9 @@ tk.Label(frame2, text="Substituir por:").grid(row=0, column=3)
 entry_substituir = tk.Entry(frame2, width=30)
 entry_substituir.grid(row=0, column=3, padx=5)
 
-tk.Button(frame2, text="Localizar", command=buscar_texto).grid(row=0, column=4, padx=5)
-tk.Button(frame2, text="Substituir", command=substituir_proxima).grid(row=0, column=5, padx=5)
-tk.Button(frame2, text="Substituir todos", command=substituir_todos).grid(row=0, column=6, padx=5)
-
+tk.Button(frame2, text="Localizar", command=lambda: buscar_texto(entry_busca, text_xml)).grid(row=0, column=4, padx=5)
+tk.Button(frame2, text="Substituir", command=lambda: (substituir_posicao := substituir_proxima(entry_busca, entry_substituir, text_xml, substituir_posicao))).grid(row=0, column=5, padx=5)
+tk.Button(frame2, text="Substituir todos", command=lambda: substituir_todos(entry_busca, entry_substituir, text_xml)).grid(row=0, column=6, padx=5)
 # === Editor XML ===
 text_xml = text_xml = scrolledtext.ScrolledText(root, wrap=tk.WORD)
 text_xml.pack(padx=10, pady=10, fill="both", expand=True)
