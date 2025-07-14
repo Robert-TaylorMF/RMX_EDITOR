@@ -1,4 +1,5 @@
-from conexao import obter_conexao, driver_disponivel, verificar_driver_sql, mostrar_aviso_driver
+from conexao import obter_conexao, driver_disponivel, mostrar_aviso_driver
+from verificador import verificar_driver_sql, verificar_atualizacao
 from xml_operacoes import carregar_xml, salvar_xml
 from utilitarios import (
     formatar_xml, salvar_backup, realcar_sintaxe_xml,
@@ -554,7 +555,7 @@ def mostrar_sobre():
     tk.Button(sobre, text="Fechar", command=sobre.destroy, bg="#2e2e2e", fg="white").pack()
 
 # === Botão verificar atualizações ===
-tk.Button(root, text="Verificar Atualização", command=verificar_atualizacao).pack(pady=10)
+tk.Button(root, text="Verificar Atualização", command=lambda: verificar_atualizacao(versao)).pack(pady=10)
 
 # === Botão sobre ===
 tk.Button(root, text="Sobre", command=mostrar_sobre).pack(pady=10)
