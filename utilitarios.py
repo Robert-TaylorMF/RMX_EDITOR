@@ -83,7 +83,7 @@ def buscar_texto(entry_busca, text_widget):
         inicio = fim
         total += 1
 
-    text_widget.tag_config("destacado", background="yellow")
+    text_widget.tag_config("destacado", foreground="black", background="#fff700")
     if primeira_pos:
         text_widget.mark_set("insert", primeira_pos)
         text_widget.see(primeira_pos)
