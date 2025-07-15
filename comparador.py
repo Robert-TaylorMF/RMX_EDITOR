@@ -1,109 +1,110 @@
 import os
+import customtkinter as ctk
 import tkinter as tk
-from tkinter import messagebox, scrolledtext
-import difflib
+from tkinter import messagebox
 from utilitarios import realcar_sintaxe_xml
 
-def abrir_backup(root, text_xml, status_var):
+def abrir_backup(root, text_xml, status_var, modo_escuro_ativo):
     pasta = "backups_xml"
     if not os.path.exists(pasta):
         messagebox.showinfo("Backup", "Ainda não há backups salvos.")
         return
 
-    janela = tk.Toplevel(root)
+    janela = ctk.CTkToplevel(root)
     janela.title("Comparar XML com Backup")
-    janela.geometry("1000x600")
+    janela.geometry("700x300")
+    janela.transient(root)
+    janela.grab_set()
+    janela.focus_force()
+    janela.lift()
 
-    tk.Label(janela, text="Selecione um arquivo de backup:").pack(pady=5)
-
-    lista = tk.Listbox(janela, width=80, height=10)
-    lista.pack(pady=5)
+    ctk.CTkLabel(janela, text="Selecione um arquivo de backup:").pack(pady=(5, 0))
+    frame_lista = ctk.CTkScrollableFrame(janela, width=700, height=200, corner_radius=6)
+    frame_lista.pack(pady=5)
 
     arquivos = sorted([f for f in os.listdir(pasta) if f.endswith(".xml")], reverse=True)
-    for arq in arquivos:
-        lista.insert(tk.END, arq)
+    for nome_arquivo in arquivos:
+        ctk.CTkButton(frame_lista, text=nome_arquivo, width=680, anchor="w",
+                      command=lambda n=nome_arquivo: exibir_comparacao(n)).pack(pady=2)
 
-    def exibir_comparacao():
-        sel = lista.curselection()
-        if not sel:
-            messagebox.showwarning("Seleção", "Escolha um backup.")
-            return
-
-        nome = arquivos[sel[0]]
+    def exibir_comparacao(nome):
         caminho = os.path.join(pasta, nome)
         with open(caminho, "r", encoding="utf-8") as f:
             conteudo_backup = f.read().splitlines()
-        conteudo_atual = text_xml.get("1.0", tk.END).strip().splitlines()
+        conteudo_atual = text_xml.get("1.0", "end").strip().splitlines()
 
-        comp = tk.Toplevel(janela)
+        comp = ctk.CTkToplevel(janela)
         comp.title("Comparativo Lado a Lado")
-        comp.geometry("1200x800")
+        comp.geometry("1350x800")
+        comp.transient(janela)
+        comp.grab_set()
+        comp.focus_force()
+        comp.lift()
 
-        frame_legenda = tk.Frame(comp, bg="#f0f0f0")
-        frame_legenda.pack(pady=5)
-        tk.Label(frame_legenda, text="🟩 Adicionado", bg="#eaffea", padx=8).grid(row=0, column=0, padx=5)
-        tk.Label(frame_legenda, text="🟥 Removido", bg="#ffeaea", padx=8).grid(row=0, column=1, padx=5)
-        tk.Label(frame_legenda, text="🟨 Modificado", bg="#fff7c0", padx=8).grid(row=0, column=2, padx=5)
+        legenda = ctk.CTkFrame(comp)
+        legenda.pack(pady=5)
+        ctk.CTkLabel(legenda, text="🟩 Adicionado", fg_color="#eaffea", text_color="#0a7300", corner_radius=4).grid(row=0, column=0, padx=5)
+        ctk.CTkLabel(legenda, text="🟥 Removido", fg_color="#ffeaea", text_color="#a00000", corner_radius=4).grid(row=0, column=1, padx=5)
+        ctk.CTkLabel(legenda, text="🟨 Modificado", fg_color="#fff7c0", text_color="#c27c00", corner_radius=4).grid(row=0, column=2, padx=5)
 
-        frame_titles = tk.Frame(comp)
-        frame_titles.pack()
-        tk.Label(frame_titles, text="📝 Atual", fg="blue", font=("Segoe UI", 10, "bold")).grid(row=0, column=0, padx=20)
-        tk.Label(frame_titles, text=f"📦 Backup: {nome}", fg="green", font=("Segoe UI", 10, "bold")).grid(row=0, column=1, padx=20)
+        # 🎯 Títulos acima das caixas de texto
+        titulo_campos = ctk.CTkFrame(comp)
+        titulo_campos.pack(pady=(5, 0))
+        ctk.CTkLabel(titulo_campos, text="📂 XML Atual (Editor)", text_color="skyblue", font=("Segoe UI", 14, "bold")).grid(row=0, column=0, padx=50)
+        ctk.CTkLabel(titulo_campos, text=f"📦 Backup Selecionado: {nome}", text_color="lightgreen", font=("Segoe UI", 14, "bold")).grid(row=0, column=1, padx=50)
 
-        frame_texts = tk.Frame(comp)
-        frame_texts.pack()
+        frame = ctk.CTkFrame(comp)
+        frame.pack(expand=True, fill="both", padx=10, pady=10)
 
-        scroll = tk.Scrollbar(frame_texts, orient=tk.VERTICAL)
-        scroll.grid(row=0, column=2, sticky="ns")
+        # Usando tk.Text para compatibilidade total com tags
+        txt_atual = tk.Text(frame, wrap="none", font=("Consolas", 12))
+        txt_backup = tk.Text(frame, wrap="none", font=("Consolas", 12))
 
-        txt_atual = scrolledtext.ScrolledText(frame_texts, wrap=tk.NONE, width=70, height=35, font=("Courier New", 9), yscrollcommand=scroll.set)
-        txt_backup = scrolledtext.ScrolledText(frame_texts, wrap=tk.NONE, width=70, height=35, font=("Courier New", 9), yscrollcommand=scroll.set)
+        # 🌑 Estilo escuro com fonte branca e cursor visível
+        for txt in [txt_atual, txt_backup]:
+            txt.configure(bg="#1e1e1e", fg="white", insertbackground="white")
 
-        txt_atual.grid(row=0, column=0, padx=(10, 5))
-        txt_backup.grid(row=0, column=1, padx=(5, 10))
-        scroll.config(command=lambda *args: (txt_atual.yview(*args), txt_backup.yview(*args)))
+        txt_atual.grid(row=0, column=0, padx=(5, 3), sticky="nsew")
+        txt_backup.grid(row=0, column=1, padx=(3, 5), sticky="nsew")
 
-        def on_scroll(*args):
-            txt_atual.yview_moveto(args[0])
-            txt_backup.yview_moveto(args[0])
-
-        txt_atual.configure(yscrollcommand=on_scroll)
-        txt_backup.configure(yscrollcommand=on_scroll)
-
-        txt_atual.tag_config("modificado", background="#fff7c0")
-        txt_atual.tag_config("adicao", background="#eaffea")
-        txt_backup.tag_config("modificado", background="#fff7c0")
-        txt_backup.tag_config("remocao", background="#ffeaea")
+        frame.grid_rowconfigure(0, weight=1)
+        frame.grid_columnconfigure(0, weight=1)
+        frame.grid_columnconfigure(1, weight=1)
 
         max_linhas = max(len(conteudo_backup), len(conteudo_atual))
         for i in range(max_linhas):
             linha_atual = conteudo_atual[i] if i < len(conteudo_atual) else ""
             linha_backup = conteudo_backup[i] if i < len(conteudo_backup) else ""
 
-            if linha_atual == linha_backup:
-                txt_atual.insert(tk.END, linha_atual + "\n")
-                txt_backup.insert(tk.END, linha_backup + "\n")
-            elif linha_atual.strip() == "" and linha_backup.strip():
-                txt_backup.insert(tk.END, linha_backup + "\n", "remocao")
-                txt_atual.insert(tk.END, "\n")
-            elif linha_backup.strip() == "" and linha_atual.strip():
-                txt_atual.insert(tk.END, linha_atual + "\n", "adicao")
-                txt_backup.insert(tk.END, "\n")
-            else:
-                txt_atual.insert(tk.END, linha_atual + "\n", "modificado")
-                txt_backup.insert(tk.END, linha_backup + "\n", "modificado")
+            txt_atual.insert("end", linha_atual + "\n")
+            txt_backup.insert("end", linha_backup + "\n")
 
-        txt_atual.config(state=tk.DISABLED)
-        txt_backup.config(state=tk.DISABLED)
+            idx_atual = f"{i+1}.0"
+            idx_fim_atual = f"{i+1}.end"
+            idx_backup = f"{i+1}.0"
+            idx_fim_backup = f"{i+1}.end"
+
+            if linha_atual.strip() == "" and linha_backup.strip():
+                txt_backup.tag_add("remocao", idx_backup, idx_fim_backup)
+            elif linha_backup.strip() == "" and linha_atual.strip():
+                txt_atual.tag_add("adicao", idx_atual, idx_fim_atual)
+            elif linha_atual != linha_backup:
+                txt_atual.tag_add("modificado", idx_atual, idx_fim_atual)
+                txt_backup.tag_add("modificado", idx_backup, idx_fim_backup)
+
+        # 🎨 Tags com texto preto e fundo destacado
+        for txt in [txt_atual, txt_backup]:
+            txt.tag_config("modificado", foreground="#000000", background="#fff7c0")
+            txt.tag_config("adicao", foreground="#000000", background="#eaffea")
+            txt.tag_config("remocao", foreground="#000000", background="#ffeaea")
+            txt.config(state="disabled")
 
         def restaurar_backup():
             confirm = messagebox.askyesno("Restaurar Backup", "Deseja carregar este backup no editor?\n(É necessário clicar em SALVAR depois para aplicar no banco)")
             if confirm:
-                text_xml.delete("1.0", tk.END)
-                text_xml.insert(tk.END, "\n".join(conteudo_backup))
+                text_xml.delete("1.0", "end")
+                text_xml.insert("end", "\n".join(conteudo_backup))
                 realcar_sintaxe_xml(text_xml)
                 status_var.set(f"Backup {nome} carregado no editor.")
 
-        tk.Button(comp, text="⏪ Restaurar este backup", fg="white", bg="green", command=restaurar_backup).pack(pady=10)
-
-    tk.Button(janela, text="Comparar com Backup Selecionado", command=exibir_comparacao).pack(pady=10)
+        ctk.CTkButton(comp, text="⏪ Restaurar este backup", command=restaurar_backup).pack(pady=10)
