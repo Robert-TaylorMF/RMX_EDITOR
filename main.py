@@ -23,23 +23,8 @@ import xml.dom.minidom
 
 # === Inicialização de variaveis ===
 
-modo_escuro_ativo = False
 substituir_posicao = "1.0"
 versao = "1.2"
-
-# === verifica se há uma nova versão disponível ===
-def verificar_atualizacao(versao_local=versao):
-    try:
-        url = "https://raw.githubusercontent.com/Robert-TaylorMF/RMX_EDITOR/main/versao.txt"
-        resposta = urllib.request.urlopen(url, timeout=3)
-        versao_online = resposta.read().decode().strip()
-        if versao_online > versao_local:
-            messagebox.showinfo("Atualização disponível",
-                                f"Uma nova versão está disponível: {versao_online}\n\nAcesse:\nhttps://github.com/Robert-TaylorMF/RMX_EDITOR/releases")
-        else:
-            messagebox.showinfo("XMLEditor RM", "Você está usando a versão mais recente.")
-    except:
-        pass  # Silencioso em caso de erro offline
 
 # === Trabalhar com caminho relativo das imagens ===
 def obter_caminho(imagem_relativa):
@@ -68,39 +53,9 @@ def conectar_base():
             return
     messagebox.showerror("Erro", "Base não encontrada.")
  
-# === Aplicar Dark Mode ===
-def aplicar_tema(escuro=True):
-    fundo = "#1e1e1e" if escuro else "#ffffff"
-    texto = "#e0e0e0" if escuro else "#000000"
-    input_bg = "#2e2e2e" if escuro else "#ffffff"
-    destaque = "#264f78" if escuro else "yellow"
-    barra_status = "#1e1e1e" if escuro else "#f0f0f0"
-    fonte_status = "#aaaaaa" if escuro else "#0000aa"
-
-    root.configure(bg=fundo)
-    for frame in [frame1, frame2]:
-        frame.configure(bg=fundo)
-        for child in frame.winfo_children():
-            try:
-                child.configure(bg=input_bg, fg=texto, insertbackground=texto)
-            except:
-                pass
-
-    text_xml.configure(
-        bg=fundo,
-        fg=texto,
-        insertbackground=texto,
-        selectbackground=destaque
-    )
-    status_label.configure(bg=barra_status, fg=fonte_status)
-
-    # Realce de sintaxe
-    text_xml.tag_config("tag", foreground="#569cd6")
-    text_xml.tag_config("atributo", foreground="#d19a66")
-    text_xml.tag_config("valor", foreground="#98c379")
-    text_xml.tag_config("destacado", background=destaque) 
-
 # === Janela principal ===
+
+# === Tela de pré carregamento ===
 mostrar_splash()
 
 # === Carrega interface principal ===
@@ -112,15 +67,6 @@ root.geometry("1080x740")
 # === Barra superior: seleção de base, ID e botões principais ===
 frame1 = tk.Frame(root)
 frame1.pack(pady=10, anchor="w")
-
-# === Dark Mode ===
-def alternar_tema():
-    global modo_escuro_ativo
-    modo_escuro_ativo = not modo_escuro_ativo
-    aplicar_tema(escuro=modo_escuro_ativo)
-
-# btn_tema = tk.Button(frame1, text="🌓 Alternar Tema", command=alternar_tema)
-# btn_tema.grid(row=0, column=8, padx=5)
 
 # =================
 
@@ -174,41 +120,6 @@ tk.Button(root, text="Verificar Atualização", command=lambda: verificar_atuali
 
 # === Botão sobre ===
 tk.Button(root, text="Sobre", command=lambda: mostrar_sobre(root, versao)).pack(pady=10)
-
-# === Iniciar no modo claro ===
-def aplicar_tema(escuro=True):
-    fundo = "#1e1e1e" if escuro else "#ffffff"
-    texto = "#e0e0e0" if escuro else "#000000"
-    input_bg = "#2e2e2e" if escuro else "#ffffff"
-    destaque = "#264f78" if escuro else "yellow"
-    barra_status = "#1e1e1e" if escuro else "#f0f0f0"
-    fonte_status = "#aaaaaa" if escuro else "#0000aa"
-
-    root.configure(bg=fundo)
-    for frame in [frame1, frame2]:
-        frame.configure(bg=fundo)
-        for child in frame.winfo_children():
-            try:
-                if isinstance(child, tk.Label):
-                    child.configure(bg=frame.cget("bg"), fg=texto)
-                else:
-                    child.configure(bg=input_bg, fg=texto, insertbackground=texto)
-            except:
-                pass
-
-    text_xml.configure(
-        bg=fundo,
-        fg=texto,
-        insertbackground=texto,
-        selectbackground=destaque
-    )
-    status_label.configure(bg=barra_status, fg=fonte_status)
-
-    # Realce de sintaxe
-    text_xml.tag_config("tag", foreground="#569cd6")
-    text_xml.tag_config("atributo", foreground="#d19a66")
-    text_xml.tag_config("valor", foreground="#98c379")
-    text_xml.tag_config("destacado", background=destaque)
 
 # === Iniciar aplicação ===
 verificar_driver_sql()
