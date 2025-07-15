@@ -4,7 +4,7 @@ import tkinter as tk
 from tkinter import messagebox
 from utilitarios import realcar_sintaxe_xml
 
-def abrir_backup(root, text_xml, status_var, modo_escuro_ativo):
+def abrir_backup(root, text_xml, status_var):
     pasta = "backups_xml"
     if not os.path.exists(pasta):
         messagebox.showinfo("Backup", "Ainda não há backups salvos.")

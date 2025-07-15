@@ -5,7 +5,7 @@ a = Analysis(
     ['main.py'],
     pathex=[],
     binaries=[],
-    datas=[('recursos/logo_splash.png', 'recursos')],
+    datas=[],
     hiddenimports=[],
     hookspath=[],
     hooksconfig={},

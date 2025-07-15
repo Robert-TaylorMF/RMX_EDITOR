@@ -7,6 +7,7 @@ from xml_operacoes import carregar_xml, salvar_xml
 from splash import mostrar_splash
 from sobre import mostrar_sobre
 from comparador import abrir_backup
+from atalhos import configurar_atalhos
 from utilitarios import (
     formatar_xml, salvar_backup, realcar_sintaxe_xml,
     buscar_texto, substituir_proxima, substituir_todos
@@ -14,7 +15,6 @@ from utilitarios import (
 
 # === Inicialização de variáveis globais ===
 bases_disponiveis = carregar_bases_json()
-base_selecionada = None
 substituir_posicao = "1.0"
 versao = "1.3"
 modo_escuro_ativo = True  # placeholder para controle futuro de tema
@@ -33,6 +33,7 @@ mostrar_splash()
 
 # === Janela principal com customtkinter ===
 root = CTk()
+base_selecionada = ctk.StringVar(master=root, value="Selecione a base")
 root.iconbitmap("recursos/xmleditor.ico")
 root.state("zoomed")
 root.title(f"XMLEditor RM – Editor de XML eSocial v{versao}")
@@ -61,6 +62,19 @@ CTkButton(frame1, text="Carregar", command=lambda: carregar_xml(
 CTkButton(frame1, text="Salvar", command=lambda: salvar_xml(
     base_selecionada, entry_id.get(), text_xml.get("1.0", "end").strip(), text_xml
 )).grid(row=0, column=6, padx=5)
+
+# === Guardando o comando do botão salvar para reutiliza-lo ===
+botao_salvar = ctk.CTkButton(
+    frame1,
+    text="Salvar",
+    command=lambda: salvar_xml(
+        base_selecionada,
+        entry_id.get(),
+        text_xml.get("1.0", "end").strip(),
+        text_xml
+    )
+)
+botao_salvar.grid(row=0, column=6, padx=5)
 
 CTkButton(frame1, text="Ver Backup", command=lambda: abrir_backup(
     root, text_xml, status_var, modo_escuro_ativo
@@ -98,5 +112,6 @@ CTkButton(root, text="Sobre", command=lambda: mostrar_sobre(root, versao)).pack(
 ctk.set_appearance_mode("dark")  # ou "light"
 ctk.set_default_color_theme("blue")  # outras opções: "green", "dark-blue"
 verificar_driver_sql()
+configurar_atalhos(root, text_xml, status_var, base_selecionada, entry_id, botao_salvar)
 
 root.mainloop()
