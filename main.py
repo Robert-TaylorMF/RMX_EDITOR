@@ -1,6 +1,6 @@
 import customtkinter as ctk
 from customtkinter import CTk, CTkLabel, CTkButton, CTkEntry, CTkTextbox, CTkComboBox
-from configuracao import obter_caminho, carregar_bases_json, conectar_base
+from configuracao import obter_caminho, carregar_bases, conectar_base
 from conexao import obter_conexao
 from verificador import verificar_driver_sql, verificar_atualizacao
 from xml_operacoes import carregar_xml, salvar_xml
@@ -12,9 +12,10 @@ from utilitarios import (
     formatar_xml, salvar_backup, realcar_sintaxe_xml,
     buscar_texto, substituir_proxima, substituir_todos
 )
+from gerenciador_bases import abrir_gerenciador_de_bases
 
 # === Inicialização de variáveis globais ===
-bases_disponiveis = carregar_bases_json()
+bases_disponiveis = carregar_bases()
 substituir_posicao = "1.0"
 versao = "1.3"
 modo_escuro_ativo = True  # placeholder para controle futuro de tema
@@ -33,6 +34,7 @@ mostrar_splash()
 
 # === Janela principal com customtkinter ===
 root = CTk()
+status_var = ctk.StringVar()
 base_selecionada = ctk.StringVar(master=root, value="Selecione a base")
 root.iconbitmap("recursos/xmleditor.ico")
 root.state("zoomed")
@@ -47,7 +49,12 @@ frame1.pack(pady=10, anchor="w", fill="x", padx=10)
 CTkLabel(frame1, text="Base:").grid(row=0, column=0, padx=5, pady=5)
 combo_base = CTkComboBox(frame1, values=[b["nome"] for b in bases_disponiveis], width=200)
 combo_base.grid(row=0, column=1, padx=5)
-combo_base.set(bases_disponiveis[0]["nome"])
+if bases_disponiveis:
+    combo_base.set(bases_disponiveis[0]["nome"])
+else:
+    combo_base.set("Nenhuma base encontrada")
+    status_var.set("Nenhuma base disponível. Cadastre uma usando o botão no canto superior.")
+    root.after(1000, lambda: abrir_gerenciador_de_bases(root))
 
 CTkButton(frame1, text="Conectar", command=conectar_e_atualizar).grid(row=0, column=2, padx=5)
 
@@ -59,12 +66,8 @@ CTkButton(frame1, text="Carregar", command=lambda: carregar_xml(
     base_selecionada, entry_id.get(), text_xml, status_var
 )).grid(row=0, column=5, padx=5)
 
-CTkButton(frame1, text="Salvar", command=lambda: salvar_xml(
-    base_selecionada, entry_id.get(), text_xml.get("1.0", "end").strip(), text_xml
-)).grid(row=0, column=6, padx=5)
-
-# === Guardando o comando do botão salvar para reutiliza-lo ===
-botao_salvar = ctk.CTkButton(
+# Botão de salvar e referência para o atalho
+botao_salvar = CTkButton(
     frame1,
     text="Salvar",
     command=lambda: salvar_xml(
@@ -79,6 +82,18 @@ botao_salvar.grid(row=0, column=6, padx=5)
 CTkButton(frame1, text="Ver Backup", command=lambda: abrir_backup(
     root, text_xml, status_var, modo_escuro_ativo
 )).grid(row=0, column=7, padx=5)
+
+# Botão Gerenciar Bases — destacado no canto direito!
+botao_gerenciar = CTkButton(
+    root,
+    text="🗂️ Gerenciar Bases",
+    fg_color="#0077cc",
+    hover_color="#005fa3",
+    text_color="white",
+    corner_radius=8,
+    command=lambda: abrir_gerenciador_de_bases(root)
+)
+botao_gerenciar.place(relx=1.0, y=10, anchor="ne")
 
 # === Frame 2: Busca e substituição ===
 frame2 = ctk.CTkFrame(root)
@@ -101,7 +116,6 @@ text_xml = CTkTextbox(root, wrap="word", height=20)
 text_xml.pack(padx=10, pady=10, fill="both", expand=True)
 
 # === Barra de status ===
-status_var = ctk.StringVar()
 CTkLabel(root, textvariable=status_var, text_color="skyblue").pack(pady=5)
 
 # === Botões adicionais ===
@@ -109,8 +123,8 @@ CTkButton(root, text="Verificar Atualização", command=lambda: verificar_atuali
 CTkButton(root, text="Sobre", command=lambda: mostrar_sobre(root, versao)).pack(pady=4)
 
 # === Inicialização final ===
-ctk.set_appearance_mode("dark")  # ou "light"
-ctk.set_default_color_theme("blue")  # outras opções: "green", "dark-blue"
+ctk.set_appearance_mode("dark")
+ctk.set_default_color_theme("blue")
 verificar_driver_sql()
 configurar_atalhos(root, text_xml, status_var, base_selecionada, entry_id, botao_salvar)
 
