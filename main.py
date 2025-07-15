@@ -1,3 +1,4 @@
+from configuracao import obter_caminho, carregar_bases_json, conectar_base
 from conexao import obter_conexao
 from verificador import verificar_driver_sql, verificar_atualizacao
 from xml_operacoes import carregar_xml, salvar_xml
@@ -9,22 +10,24 @@ from utilitarios import (
     buscar_texto, substituir_proxima, substituir_todos
 )
 
-import urllib.request
 from tkinter import messagebox
 import json
 import os
 import sys
-import re
-from datetime import datetime
 import tkinter as tk
 from tkinter import ttk, messagebox, scrolledtext
 import tkinter as tk
-import xml.dom.minidom
 
 # === Inicialização de variaveis ===
 
+bases_disponiveis = carregar_bases_json()
+base_selecionada = None
 substituir_posicao = "1.0"
 versao = "1.2"
+
+def conectar_e_atualizar():
+    global base_selecionada
+    base_selecionada = conectar_base(bases_disponiveis, combo_base.get(), status_var)
 
 # === Trabalhar com caminho relativo das imagens ===
 def obter_caminho(imagem_relativa):
@@ -74,7 +77,7 @@ tk.Label(frame1, text="Base:" ).grid(row=0, column=0)
 combo_base = ttk.Combobox(frame1, values=[b["nome"] for b in bases_disponiveis], state="readonly", width=25)
 combo_base.grid(row=0, column=1)
 combo_base.current(0)
-tk.Button(frame1, text="Conectar", command=conectar_base).grid(row=0, column=2, padx=5)
+tk.Button(frame1, text="Conectar", command=conectar_e_atualizar).grid(row=0, column=2, padx=5)
 
 tk.Label(frame1, text="ID do Evento:").grid(row=0, column=3)
 entry_id = tk.Entry(frame1, width=45)
@@ -88,7 +91,7 @@ tk.Button(frame1, text="Salvar", command=lambda: salvar_xml(
 
 # === Botão de Backup === 
 
-tk.Button(frame1, text="Ver Backup", command=lambda: abrir_backup(root, text_xml, status_var, modo_escuro_ativo)).grid(row=0, column=7, padx=5)
+tk.Button(frame1, text="Ver Backup", command=lambda: abrir_backup(root, text_xml, status_var)).grid(row=0, column=7, padx=5)
 
 # === Barra de busca e substituição ===
 frame2 = tk.Frame(root)

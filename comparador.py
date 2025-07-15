@@ -4,7 +4,7 @@ from tkinter import messagebox, scrolledtext
 import difflib
 from utilitarios import realcar_sintaxe_xml
 
-def abrir_backup(root, text_xml, status_var, modo_escuro_ativo):
+def abrir_backup(root, text_xml, status_var):
     pasta = "backups_xml"
     if not os.path.exists(pasta):
         messagebox.showinfo("Backup", "Ainda não há backups salvos.")
@@ -92,15 +92,6 @@ def abrir_backup(root, text_xml, status_var, modo_escuro_ativo):
             else:
                 txt_atual.insert(tk.END, linha_atual + "\n", "modificado")
                 txt_backup.insert(tk.END, linha_backup + "\n", "modificado")
-
-        if modo_escuro_ativo:
-            for widget in [comp, frame_legenda, frame_titles, frame_texts, txt_atual, txt_backup]:
-                try:
-                    widget.configure(bg="#1e1e1e")
-                except:
-                    pass
-            for text in [txt_atual, txt_backup]:
-                text.configure(bg="#1e1e1e", fg="#e0e0e0", insertbackground="white", selectbackground="#264f78")
 
         txt_atual.config(state=tk.DISABLED)
         txt_backup.config(state=tk.DISABLED)
