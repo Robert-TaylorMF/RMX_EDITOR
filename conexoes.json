@@ -1,11 +1,18 @@
 {
   "bases": [
     {
-      "nome": "Homologacao",
-      "host": "192.168.1.64\\sqlexpress",
+      "nome": "Produção",
+      "host": "129.200.19.30",
       "usuario": "sa",
-      "senha": "gAAAAABodyofb4lBOca6Wpf7inatPF5Tn4si5HUac9HpXgi7a6guVS-7SCBAOILBu806CppIE1HfrqWjHAEVunYrtKFxfgs18g==",
-      "database": "EXEMPLO"
+      "senha": "gAAAAABod_SVMk3J9v14zlqSdFPnKFetgZZ0g5p0SERKVWmdJVGZk5Gu1Ouv3tXd9h6Oy5M-uK9GSBBG-I29d4AeWSMvL0Ge8w==",
+      "database": "CorporeRM"
+    },
+    {
+      "nome": "Homologacao",
+      "host": "129.200.19.30",
+      "usuario": "sa",
+      "senha": "gAAAAABoeAFRmnrZgzSupA4t7a6hWDB9Y2gTKjBkpybdX9T9IAg05b_mt_AOCHrE59GWPBsJDWFi1QghmM3ORYJoKvchsCHE_w==",
+      "database": "CorporeRM_HOMOLOGA"
     }
   ]
 }

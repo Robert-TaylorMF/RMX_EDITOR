@@ -1,11 +1,10 @@
-import customtkinter as tk
+import customtkinter as ctk
 import tkinter as tk
 from tkinter import messagebox
 import os
 import re
 from datetime import datetime
 import xml.dom.minidom
-
 
 # 🧹 Formata XML com identação elegante
 def formatar_xml(xml_str):
@@ -193,3 +192,19 @@ def abrir_localizador():
     ctk.CTkButton(janela, text="🔍 Localizar", command=localizar).pack(pady=(10, 2))
     ctk.CTkButton(janela, text="↺ Substituir", command=substituir).pack(pady=2)
     ctk.CTkButton(janela, text="🔁 Substituir Todas", command=substituir_tudo).pack(pady=2)
+    
+def compactar_xml(xml_str):
+    # Remove quebras de linha e espaços entre as tags
+    xml_compacto = re.sub(r">\s+<", "><", xml_str.strip())
+    return xml_compacto
+
+def extrair_conteudo_esocial(xml_str):
+    """
+    Remove cabeçalho e retorna apenas o conteúdo a partir da tag <eSocial>
+    """
+    xml_str = xml_str.strip()
+    inicio = xml_str.find("<eSocial")
+    if inicio != -1:
+        return xml_str[inicio:]
+    return xml_str  # caso não encontre, retorna como está
+

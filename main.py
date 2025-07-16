@@ -10,7 +10,8 @@ from comparador import abrir_backup
 from atalhos import configurar_atalhos
 from utilitarios import (
     formatar_xml, salvar_backup, realcar_sintaxe_xml,
-    buscar_texto, substituir_proxima, substituir_todos
+    buscar_texto, substituir_proxima, substituir_todos,
+    compactar_xml, extrair_conteudo_esocial
 )
 from gerenciador_bases import abrir_gerenciador_de_bases
 
@@ -56,6 +57,9 @@ ctk.CTkButton(
 ctk.CTkButton(
     menu_lateral,
     text="Verificar Atualização",
+    fg_color="#0077cc",
+    hover_color="#005fa3",
+    text_color="white",
     command=lambda: verificar_atualizacao(versao)
 ).pack(pady=10)
 
@@ -63,6 +67,9 @@ ctk.CTkButton(
 ctk.CTkButton(
     menu_lateral,
     text="Sobre",
+    fg_color="#0077cc",
+    hover_color="#005fa3",
+    text_color="white",
     command=lambda: mostrar_sobre(root, versao)
 ).pack(pady=10)
 
@@ -106,7 +113,7 @@ botao_salvar = CTkButton(
     command=lambda: salvar_xml(
         base_selecionada,
         entry_id.get(),
-        text_xml.get("1.0", "end").strip(),
+        extrair_conteudo_esocial(compactar_xml(text_xml.get("1.0", "end"))),
         text_xml
     )
 )
