@@ -1,11 +1,11 @@
 {
   "bases": [
     {
-      "nome": "Homologação",
-      "host": "129.200.19.30",
+      "nome": "Homologacao",
+      "host": "192.168.1.64\\sqlexpress",
       "usuario": "sa",
-      "senha": "gAAAAABodrskvRP1q9hacrB3BKRHScoszfdEO33D1Hsgj8kYkKGytGPfm1R6zO_ce29jip6_d6RSr0BD65rVA4i2dJyJno1nYw==",
-      "database": "CorporeRM_Homologa"
+      "senha": "gAAAAABodyofb4lBOca6Wpf7inatPF5Tn4si5HUac9HpXgi7a6guVS-7SCBAOILBu806CppIE1HfrqWjHAEVunYrtKFxfgs18g==",
+      "database": "EXEMPLO"
     }
   ]
 }

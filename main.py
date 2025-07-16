@@ -18,12 +18,12 @@ from gerenciador_bases import abrir_gerenciador_de_bases
 bases_disponiveis = carregar_bases()
 substituir_posicao = "1.0"
 versao = "1.3"
-modo_escuro_ativo = True  # placeholder para controle futuro de tema
 
 # === Funções auxiliares ===
 def conectar_e_atualizar():
     global base_selecionada
-    base_selecionada = conectar_base(bases_disponiveis, combo_base.get(), status_var)
+    bases_atualizadas = carregar_bases()
+    base_selecionada = conectar_base(bases_atualizadas, combo_base.get(), status_var)
 
 def substituir_e_avancar():
     global substituir_posicao
@@ -34,6 +34,38 @@ mostrar_splash()
 
 # === Janela principal com customtkinter ===
 root = CTk()
+
+# === Menu lateral à esquerda ===
+menu_lateral = ctk.CTkFrame(root, width=160, corner_radius=0)
+menu_lateral.pack(side="left", fill="y")
+
+# Título do sistema
+ctk.CTkLabel(menu_lateral, text="XMLEditor RM", font=("Arial", 18, "bold")).pack(pady=20)
+
+# Botão: Gerenciar Bases
+ctk.CTkButton(
+    menu_lateral,
+    text="Gerenciar Bases",
+    command=lambda: abrir_gerenciador_de_bases(root, combo_base, status_var),
+    fg_color="#0077cc",
+    hover_color="#005fa3",
+    text_color="white"
+).pack(pady=10)
+
+# Botão: Verificar Atualização
+ctk.CTkButton(
+    menu_lateral,
+    text="Verificar Atualização",
+    command=lambda: verificar_atualizacao(versao)
+).pack(pady=10)
+
+# Botão: Sobre — fixado no rodapé
+ctk.CTkButton(
+    menu_lateral,
+    text="Sobre",
+    command=lambda: mostrar_sobre(root, versao)
+).pack(pady=10)
+
 status_var = ctk.StringVar()
 base_selecionada = ctk.StringVar(master=root, value="Selecione a base")
 root.iconbitmap("recursos/xmleditor.ico")
@@ -47,6 +79,7 @@ frame1 = ctk.CTkFrame(root)
 frame1.pack(pady=10, anchor="w", fill="x", padx=10)
 
 CTkLabel(frame1, text="Base:").grid(row=0, column=0, padx=5, pady=5)
+global combo_base
 combo_base = CTkComboBox(frame1, values=[b["nome"] for b in bases_disponiveis], width=200)
 combo_base.grid(row=0, column=1, padx=5)
 if bases_disponiveis:
@@ -54,7 +87,7 @@ if bases_disponiveis:
 else:
     combo_base.set("Nenhuma base encontrada")
     status_var.set("Nenhuma base disponível. Cadastre uma usando o botão no canto superior.")
-    root.after(1000, lambda: abrir_gerenciador_de_bases(root))
+    root.after(1000, lambda: abrir_gerenciador_de_bases(root, combo_base, status_var))
 
 CTkButton(frame1, text="Conectar", command=conectar_e_atualizar).grid(row=0, column=2, padx=5)
 
@@ -80,20 +113,8 @@ botao_salvar = CTkButton(
 botao_salvar.grid(row=0, column=6, padx=5)
 
 CTkButton(frame1, text="Ver Backup", command=lambda: abrir_backup(
-    root, text_xml, status_var, modo_escuro_ativo
+    root, text_xml, status_var, entry_id
 )).grid(row=0, column=7, padx=5)
-
-# Botão Gerenciar Bases — destacado no canto direito!
-botao_gerenciar = CTkButton(
-    root,
-    text="🗂️ Gerenciar Bases",
-    fg_color="#0077cc",
-    hover_color="#005fa3",
-    text_color="white",
-    corner_radius=8,
-    command=lambda: abrir_gerenciador_de_bases(root)
-)
-botao_gerenciar.place(relx=1.0, y=10, anchor="ne")
 
 # === Frame 2: Busca e substituição ===
 frame2 = ctk.CTkFrame(root)
@@ -103,11 +124,12 @@ CTkLabel(frame2, text="Buscar:").grid(row=0, column=0, padx=5, pady=5)
 entry_busca = CTkEntry(frame2, width=250)
 entry_busca.grid(row=0, column=1, padx=5)
 
-CTkLabel(frame2, text="Substituir por:").grid(row=0, column=2, padx=5)
-entry_substituir = CTkEntry(frame2, width=250)
-entry_substituir.grid(row=0, column=3, padx=5)
+CTkButton(frame2, text="Localizar", command=lambda: buscar_texto(entry_busca, text_xml)).grid(row=0, column=2, padx=5)
 
-CTkButton(frame2, text="Localizar", command=lambda: buscar_texto(entry_busca, text_xml)).grid(row=0, column=4, padx=5)
+CTkLabel(frame2, text="Substituir por:").grid(row=0, column=3, padx=5)
+entry_substituir = CTkEntry(frame2, width=250)
+entry_substituir.grid(row=0, column=4, padx=5)
+
 CTkButton(frame2, text="Substituir", command=substituir_e_avancar).grid(row=0, column=5, padx=5)
 CTkButton(frame2, text="Substituir todos", command=lambda: substituir_todos(entry_busca, entry_substituir, text_xml)).grid(row=0, column=6, padx=5)
 
@@ -117,10 +139,6 @@ text_xml.pack(padx=10, pady=10, fill="both", expand=True)
 
 # === Barra de status ===
 CTkLabel(root, textvariable=status_var, text_color="skyblue").pack(pady=5)
-
-# === Botões adicionais ===
-CTkButton(root, text="Verificar Atualização", command=lambda: verificar_atualizacao(versao)).pack(pady=8)
-CTkButton(root, text="Sobre", command=lambda: mostrar_sobre(root, versao)).pack(pady=4)
 
 # === Inicialização final ===
 ctk.set_appearance_mode("dark")

@@ -3,7 +3,7 @@ from tkinter import messagebox
 from configuracao import carregar_bases, salvar_nova_base, excluir_base
 from seguranca import criptografar_senha
 
-def abrir_gerenciador_de_bases(root):
+def abrir_gerenciador_de_bases(root, combo=None, status=None):
     janela = ctk.CTkToplevel(root)
     janela.title("Gerenciador de Bases")
     janela.geometry("460x400")
@@ -44,6 +44,15 @@ def abrir_gerenciador_de_bases(root):
         salvar_nova_base(nova)
         messagebox.showinfo("Base salva", f"Base '{nova['nome']}' cadastrada com sucesso!")
         atualizar_lista()
+        
+        # Atualiza combo_base no main.py após salvar nova base
+        if combo:
+            novas_bases = carregar_bases()
+            nomes = [b["nome"] for b in novas_bases]
+            combo.configure(values=nomes)
+            combo.set(nova["nome"])
+        if status:
+            status.set("✅ Nova base cadastrada e carregada com sucesso.")
 
     ctk.CTkButton(janela, text="Salvar Base", command=salvar_base).pack(pady=10)
 
