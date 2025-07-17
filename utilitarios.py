@@ -60,7 +60,6 @@ def realcar_sintaxe_xml(text_widget):
     text_widget.tag_config("tag", foreground="#00ccff")
     text_widget.tag_config("atributo", foreground="#ff7700")
     text_widget.tag_config("valor", foreground="#00ff99")
-    text_widget.configure(font=("Consolas", 14))
 
 # 🔍 Destaca todas as ocorrências do termo de busca
 def buscar_texto(entry_busca, text_widget):
@@ -124,7 +123,7 @@ def substituir_todos(entry_busca, entry_substituir, text_widget):
         return ocorrencias
     return 0
 
-def abrir_localizador():
+def abrir_localizador(text_xml, root):
     janela = ctk.CTkToplevel(root)
     janela.title("Localizar e Substituir")
     janela.geometry("400x250")
@@ -207,4 +206,5 @@ def extrair_conteudo_esocial(xml_str):
     if inicio != -1:
         return xml_str[inicio:]
     return xml_str  # caso não encontre, retorna como está
+
 

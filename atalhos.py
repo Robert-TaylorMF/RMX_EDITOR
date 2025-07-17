@@ -6,7 +6,7 @@ def configurar_atalhos(root, text_xml, status_var, base_selecionada, entry_id, b
     from utilitarios import realcar_sintaxe_xml
 
     # 🔍 CTRL + F — abrir janela de busca/substituição
-    def abrir_localizador():
+    def abrir_localizador(text_xml):
         janela = ctk.CTkToplevel(root)
         janela.title("Localizar e Substituir")
         janela.geometry("400x300")
@@ -89,5 +89,5 @@ def configurar_atalhos(root, text_xml, status_var, base_selecionada, entry_id, b
 
     # 🧩 Binds de atalhos globais
     root.bind_all("<Control-s>", lambda e: botao_salvar.invoke())
-    root.bind_all("<Control-f>", lambda e: abrir_localizador())
+    root.bind("<Control-f>", lambda e: abrir_localizador(text_xml, root))
     root.bind_all("<Control-b>", lambda e: abrir_backup(root, text_xml, status_var))
