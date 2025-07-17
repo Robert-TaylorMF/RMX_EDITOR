@@ -18,7 +18,7 @@ def criar_editor_com_linhas(pai, fonte=("Consolas", 12), bg="#1e1e1e", fg="white
 
     # Editor principal de texto XML
     text_xml = tk.Text(frame_editor, wrap="none", font=fonte,
-                       bg=bg, fg=fg, insertbackground=fg)
+                       bg=bg, fg=fg, insertbackground=fg, undo=True)
     text_xml.pack(side="left", fill="both", expand=True)
 
     # Scrollbar personalizada com Canvas

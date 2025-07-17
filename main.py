@@ -5,13 +5,12 @@ import tkinter as tk
 from tooltip import Tooltip
 from PIL import Image
 from configuracao import carregar_bases, conectar_base
-from conexao import obter_conexao
-from verificador import verificar_driver_sql, verificar_atualizacao
+from verificador import verificar_atualizacao
 from xml_operacoes import carregar_xml, salvar_xml
 from splash import mostrar_splash
 from sobre import mostrar_sobre
 from comparador import abrir_backup
-from atalhos import configurar_atalhos
+from atalhos import configurar_atalhos, desfazer, refazer
 from utilitarios import (
     formatar_xml, salvar_backup, realcar_sintaxe_xml,
     buscar_texto, substituir_proxima, substituir_todos,
@@ -38,6 +37,8 @@ icone_conectar     = ctk.CTkImage(light_image=Image.open("recursos/link.ico"), s
 icone_ver_backup   = ctk.CTkImage(light_image=Image.open("recursos/restaurar-backup.ico"), size=(36, 36))
 icone_localizar    = ctk.CTkImage(light_image=Image.open("recursos/lupa.ico"), size=(24, 24))
 icone_salvar       = ctk.CTkImage(light_image=Image.open("recursos/salvar.ico"), size=(24, 24))
+icone_desfazer     = ctk.CTkImage(light_image=Image.open("recursos/desfazer.ico"), size=(24, 24))
+icone_refazer      = ctk.CTkImage(light_image=Image.open("recursos/refazer.ico"), size=(24, 24))
 
 # === Menu lateral à esquerda ===
 menu_lateral = ctk.CTkFrame(root, width=160, corner_radius=0)
@@ -114,7 +115,7 @@ CTkButton(frame1, text="Carregar", command=lambda: carregar_xml(
 frame_toolbar = ctk.CTkFrame(root, height=44)
 frame_toolbar.pack(pady=5, anchor="w", fill="x", padx=10)
 
-# Ícone lupa (abre tela de busca/substituição)
+# === Ícone lupa (abre tela de busca/substituição) ===
 btn_lupa = ctk.CTkButton(frame_toolbar, text="", image=icone_localizar, width=48, height=48,
                          fg_color="transparent", hover_color="#e0e0e0",
                          command=lambda: abrir_localizador(text_xml, root)
@@ -122,6 +123,7 @@ btn_lupa = ctk.CTkButton(frame_toolbar, text="", image=icone_localizar, width=48
 btn_lupa.pack(side="left", padx=5)
 Tooltip(btn_lupa, "Localizar e Substituir (Ctrl+F)")
 
+# === Botão de Salvar
 botao_salvar = ctk.CTkButton(frame_toolbar, text="", image=icone_salvar, width=48, height=48,
                              fg_color="transparent", hover_color="#e0e0e0",
                              command=lambda: salvar_xml(
@@ -133,6 +135,21 @@ botao_salvar = ctk.CTkButton(frame_toolbar, text="", image=icone_salvar, width=4
 botao_salvar.pack(side="left", padx=5)
 Tooltip(botao_salvar, "Salvar XML no Banco")
 
+# === Botão de Desfazer === 
+btn_desfazer = ctk.CTkButton(frame_toolbar, text="", image=icone_desfazer, width=38, height=38,
+                             fg_color="transparent", hover_color="#e0e0e0",
+                             command=lambda: desfazer(text_xml))
+btn_desfazer.pack(side="left", padx=5)
+Tooltip(btn_desfazer, "Desfazer (Ctrl+Z)")
+
+# === Botão de Refazer ===
+btn_refazer = ctk.CTkButton(frame_toolbar, text="", image=icone_refazer, width=38, height=38,
+                            fg_color="transparent", hover_color="#e0e0e0",
+                            command=lambda: refazer(text_xml))
+btn_refazer.pack(side="left", padx=5)
+Tooltip(btn_refazer, "Refazer (Ctrl+Y)")
+
+
 # === Editor XML com numeração ===
 text_xml = criar_editor_com_linhas(root)
 
@@ -142,7 +159,6 @@ CTkLabel(root, textvariable=status_var, text_color="skyblue").pack(pady=5)
 # === Inicialização final ===
 ctk.set_appearance_mode("dark")
 ctk.set_default_color_theme("blue")
-verificar_driver_sql()
 configurar_atalhos(root, text_xml, status_var, base_selecionada, entry_id, botao_salvar)
 
 root.mainloop()
