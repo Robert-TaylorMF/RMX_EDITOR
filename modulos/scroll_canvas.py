@@ -6,6 +6,10 @@ class ScrollCanvas(tk.Canvas):
         self.thumb = self.create_rectangle(2, 0, 8, 40, fill="#3a3a3a", outline="#3a3a3a")
         self.scroll_target = None
 
+        # Hover effect
+        self.bind("<Enter>", self.on_hover)
+        self.bind("<Leave>", self.on_leave)
+
         self.bind("<Button-1>", self.start_scroll)
         self.bind("<B1-Motion>", self.do_scroll)
 
@@ -15,8 +19,12 @@ class ScrollCanvas(tk.Canvas):
         widget.bind("<MouseWheel>", self.scroll_mouse)
 
     def update_thumb(self, first, last):
-        top = float(first)
-        height = float(last) - top
+        try:
+            top = float(first)
+            height = float(last) - top
+        except:
+            top = 0
+            height = 0.2
         canvas_height = self.winfo_height()
         thumb_top = int(top * canvas_height)
         thumb_bottom = int((top + height) * canvas_height)
@@ -35,3 +43,9 @@ class ScrollCanvas(tk.Canvas):
         delta_y = event.y - thumb_coords[1]
         fraction = delta_y / self.winfo_height()
         self.scroll_target.yview_moveto(fraction)
+
+    def on_hover(self, event):
+        self.itemconfig(self.thumb, fill="#4a4a4a", outline="#4a4a4a")
+
+    def on_leave(self, event):
+        self.itemconfig(self.thumb, fill="#3a3a3a", outline="#3a3a3a")
