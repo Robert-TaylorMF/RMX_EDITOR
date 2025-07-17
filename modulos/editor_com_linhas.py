@@ -1,4 +1,5 @@
 import tkinter as tk
+from modulos.scroll_canvas import ScrollCanvas
 
 def criar_editor_com_linhas(pai, fonte=("Consolas", 12), bg="#1e1e1e", fg="white"):
     # Frame que agrupa régua e editor
@@ -20,35 +21,30 @@ def criar_editor_com_linhas(pai, fonte=("Consolas", 12), bg="#1e1e1e", fg="white
                        bg=bg, fg=fg, insertbackground=fg)
     text_xml.pack(side="left", fill="both", expand=True)
 
-    # Scrollbar sincronizada
-    scrollbar = tk.Scrollbar(frame_editor)
+    # Scrollbar personalizada com Canvas
+    scrollbar = ScrollCanvas(frame_editor)
     scrollbar.pack(side="right", fill="y")
+    scrollbar.connect(text_xml)
 
     def atualizar_linhas(event=None):
         linha_numero.config(state="normal")
         linha_numero.delete("1.0", "end")
 
-        total = int(text_xml.index("end-1c").split(".")[0])
+        try:
+            total = int(text_xml.index("end-1c").split(".")[0])
+        except:
+            total = 1
+
         linhas = "\n".join(str(i) for i in range(1, total + 1))
         linha_numero.insert("1.0", linhas)
         linha_numero.config(state="disabled")
 
-        # Garante que as views fiquem sincronizadas
+        # Sincroniza a view da régua com o texto
         linha_numero.yview_moveto(text_xml.yview()[0])
 
-    def ao_scroll(*args):
-        text_xml.yview(*args)
-        linha_numero.yview(*args)
-
-    text_xml.config(yscrollcommand=lambda *args: [scrollbar.set(*args), linha_numero.yview_moveto(args[0])])
-    linha_numero.config(yscrollcommand=scrollbar.set)
-    scrollbar.config(command=ao_scroll)
-
     # Eventos que disparam a atualização
-    text_xml.bind("<KeyRelease>", atualizar_linhas)
-    text_xml.bind("<ButtonRelease-1>", atualizar_linhas)
-    text_xml.bind("<MouseWheel>", lambda e: atualizar_linhas())
-    text_xml.bind("<Configure>", lambda e: atualizar_linhas())
+    for evento in ["<KeyRelease>", "<ButtonRelease-1>", "<MouseWheel>", "<Configure>"]:
+        text_xml.bind(evento, atualizar_linhas)
 
     atualizar_linhas()
     return text_xml
