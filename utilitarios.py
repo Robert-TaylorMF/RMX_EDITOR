@@ -5,6 +5,23 @@ import os
 import re
 from datetime import datetime
 import xml.dom.minidom
+import pyperclip
+
+# 📋 Copia o texto selecionado do editor
+def copiar_texto(text_widget):
+    try:
+        texto = text_widget.get("sel.first", "sel.last")
+        pyperclip.copy(texto)
+    except tk.TclError:
+        pass  # nada selecionado
+
+# 📥 Cola o conteúdo do clipboard na posição atual
+def colar_texto(text_widget):
+    try:
+        texto = pyperclip.paste()
+        text_widget.insert("insert", texto)
+    except Exception:
+        pass
 
 # 🧹 Formata XML com identação elegante
 def formatar_xml(xml_str):
@@ -206,5 +223,6 @@ def extrair_conteudo_esocial(xml_str):
     if inicio != -1:
         return xml_str[inicio:]
     return xml_str  # caso não encontre, retorna como está
+
 
 

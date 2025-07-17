@@ -1,4 +1,5 @@
 # === Importações ===
+import pyperclip
 import customtkinter as ctk
 from customtkinter import CTk, CTkLabel, CTkButton, CTkEntry, CTkTextbox, CTkComboBox
 import tkinter as tk
@@ -11,13 +12,14 @@ from splash import mostrar_splash
 from sobre import mostrar_sobre
 from comparador import abrir_backup
 from atalhos import configurar_atalhos, desfazer, refazer
+from gerenciador_bases import abrir_gerenciador_de_bases
+from modulos.editor_com_linhas import criar_editor_com_linhas
 from utilitarios import (
     formatar_xml, salvar_backup, realcar_sintaxe_xml,
     buscar_texto, substituir_proxima, substituir_todos,
-    compactar_xml, extrair_conteudo_esocial, abrir_localizador
+    compactar_xml, extrair_conteudo_esocial, abrir_localizador,
+    copiar_texto, colar_texto
 )
-from gerenciador_bases import abrir_gerenciador_de_bases
-from modulos.editor_com_linhas import criar_editor_com_linhas
 
 # === Inicialização de variáveis globais ===
 bases_disponiveis = carregar_bases()
@@ -39,6 +41,8 @@ icone_localizar    = ctk.CTkImage(light_image=Image.open("recursos/lupa.ico"), s
 icone_salvar       = ctk.CTkImage(light_image=Image.open("recursos/salvar.ico"), size=(24, 24))
 icone_desfazer     = ctk.CTkImage(light_image=Image.open("recursos/desfazer.ico"), size=(24, 24))
 icone_refazer      = ctk.CTkImage(light_image=Image.open("recursos/refazer.ico"), size=(24, 24))
+icone_copiar       = ctk.CTkImage(light_image=Image.open("recursos/copiar.ico"), size=(24, 24))
+icone_colar        = ctk.CTkImage(light_image=Image.open("recursos/colar.ico"), size=(24, 24))
 
 # === Menu lateral à esquerda ===
 menu_lateral = ctk.CTkFrame(root, width=160, corner_radius=0)
@@ -134,6 +138,20 @@ botao_salvar = ctk.CTkButton(frame_toolbar, text="", image=icone_salvar, width=4
                              ))
 botao_salvar.pack(side="left", padx=5)
 Tooltip(botao_salvar, "Salvar XML no Banco")
+
+# === Botão Copiar ===
+btn_copiar = ctk.CTkButton(frame_toolbar, text="", image=icone_copiar, width=38, height=38,
+                           fg_color="transparent", hover_color="#e0e0e0",
+                           command=lambda: copiar_texto(text_xml))
+btn_copiar.pack(side="left", padx=5)
+Tooltip(btn_copiar, "Copiar texto selecionado (Ctrl+C)")
+
+# === Botão Colar ===
+btn_colar = ctk.CTkButton(frame_toolbar, text="", image=icone_colar, width=38, height=38,
+                          fg_color="transparent", hover_color="#e0e0e0",
+                          command=lambda: colar_texto(text_xml))
+btn_colar.pack(side="left", padx=5)
+Tooltip(btn_colar, "Colar conteúdo (Ctrl+V)")
 
 # === Botão de Desfazer === 
 btn_desfazer = ctk.CTkButton(frame_toolbar, text="", image=icone_desfazer, width=38, height=38,

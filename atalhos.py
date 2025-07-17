@@ -5,7 +5,7 @@ def desfazer(text_xml):
         text_xml.edit_undo()
     except tk.TclError:
         pass  # nada para desfazer
-def refazer(text_xml):
+def refazer():
     try:
         text_xml.edit_redo()
     except tk.TclError:
