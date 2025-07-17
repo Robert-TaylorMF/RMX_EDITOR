@@ -13,6 +13,13 @@
       "usuario": "sa",
       "senha": "gAAAAABoeAFRmnrZgzSupA4t7a6hWDB9Y2gTKjBkpybdX9T9IAg05b_mt_AOCHrE59GWPBsJDWFi1QghmM3ORYJoKvchsCHE_w==",
       "database": "CorporeRM_HOMOLOGA"
+    },
+    {
+      "nome": "Teste",
+      "host": "192.168.1.64\\SQLEXPRESS",
+      "usuario": "sa",
+      "senha": "gAAAAABoeX1nsn6pzWlVOvelxYhGPARWUg18y9XOATQ-TRehQgZpzDSz08KkdLRLpSCX1QkSWqaoNG4DtVty0Ff6nKOV1oainQ==",
+      "database": "EXEMPLO"
     }
   ]
 }
