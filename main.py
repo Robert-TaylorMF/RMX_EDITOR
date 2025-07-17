@@ -1,3 +1,4 @@
+# === Importações ===
 import customtkinter as ctk
 from customtkinter import CTk, CTkLabel, CTkButton, CTkEntry, CTkTextbox, CTkComboBox
 import tkinter as tk
@@ -17,6 +18,7 @@ from utilitarios import (
     compactar_xml, extrair_conteudo_esocial
 )
 from gerenciador_bases import abrir_gerenciador_de_bases
+from modulos.editor_com_linhas import criar_editor_com_linhas
 
 # === Inicialização de variáveis globais ===
 bases_disponiveis = carregar_bases()
@@ -145,8 +147,9 @@ CTkButton(frame2, text="Substituir", command=substituir_e_avancar).grid(row=0, c
 CTkButton(frame2, text="Substituir todos", command=lambda: substituir_todos(entry_busca, entry_substituir, text_xml)).grid(row=0, column=6, padx=5)
 
 # === Editor XML ===
-text_xml = CTkTextbox(root, wrap="word", height=20)
-text_xml.pack(padx=10, pady=10, fill="both", expand=True)
+#text_xml = CTkTextbox(root, wrap="word", height=20)
+#text_xml.pack(padx=10, pady=10, fill="both", expand=True)
+text_xml = criar_editor_com_linhas(root)
 
 # == Rodapé ===
 frame_rodape = ctk.CTkFrame(root)
