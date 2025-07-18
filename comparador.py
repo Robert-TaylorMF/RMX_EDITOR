@@ -13,19 +13,26 @@ icone_lixeira = ctk.CTkImage(light_image=Image.open("recursos/lixeira.ico"), siz
 def dividir_por_tags(xml_str):
     return re.findall(r"<[^>]+>[^<]*</[^>]+>", formatar_xml(xml_str))
 
-def abrir_backup(root, editor_xml, status_var, entry_id):
+def abrir_backup(root, painel_guias, nome_guia, status_var):
     import time
     pasta = "backups_xml"
+
+    if nome_guia not in painel_guias.editores:
+        messagebox.showwarning("Erro", f"A guia {nome_guia} não existe.")
+        return
+
+    guia = painel_guias.editores[nome_guia]
+    editor_frame = guia["editor"]
+    evento_id = guia.get("evento_id")
+
+    if not evento_id:
+        messagebox.showwarning("Atenção", "Esta guia não possui um ID de evento definido.")
+        return
 
     if not os.path.exists(pasta):
         messagebox.showinfo("Backup", "Ainda não há backups salvos.")
         return
-
-    id_evento = entry_id.get().strip()
-    if not id_evento:
-        messagebox.showwarning("Atenção", "Digite um ID de evento para visualizar os backups relacionados.")
-        return
-
+    
     janela = ctk.CTkToplevel(root)
     janela.title("Comparar XML com Backup")
     janela.geometry("800x360")
@@ -34,18 +41,19 @@ def abrir_backup(root, editor_xml, status_var, entry_id):
     janela.focus_force()
     janela.lift()
 
-    ctk.CTkLabel(janela, text=f"Backups para o evento: {id_evento}", font=("Arial", 14, "bold")).pack(pady=(5, 0))
+    ctk.CTkLabel(janela, text=f"Backups para o evento: {evento_id}", font=("Arial", 14, "bold")).pack(pady=(5, 0))
     frame_lista = ctk.CTkScrollableFrame(janela, width=780, height=220, corner_radius=6)
     frame_lista.pack(pady=5)
 
     arquivos = sorted([
         f for f in os.listdir(pasta)
-        if f.endswith(".xml") and id_evento in f
+        if f.endswith(".xml") and str(evento_id) in f
     ], reverse=True)
 
     if not arquivos:
         ctk.CTkLabel(frame_lista, text="⚠️ Nenhum backup encontrado para este ID.", text_color="orange").pack(pady=10)
         return
+
     def criar_botao_backup(nome_arquivo):
         caminho = os.path.join(pasta, nome_arquivo)
         data_mod = time.strftime("%d/%m/%Y %H:%M", time.localtime(os.path.getmtime(caminho)))
@@ -53,18 +61,13 @@ def abrir_backup(root, editor_xml, status_var, entry_id):
         grupo = ctk.CTkFrame(frame_lista, fg_color="transparent")
         grupo.pack(fill="x", padx=10, pady=2)
 
-        # Botão principal de comparação
         botao = ctk.CTkButton(
             grupo, text=f"{nome_arquivo}  ({data_mod})",
             width=720, anchor="w",
-            command=lambda: exibir_comparacao(nome_arquivo, editor_xml)
+            command=lambda: exibir_comparacao(nome_arquivo, editor_frame)
         )
         botao.pack(side="left", fill="x", expand=True)
 
-        # Clique direito para visualização
-        botao.bind("<Button-3>", lambda event: gerar_preview(caminho))
-
-        # Ícone de lixeira fora da label
         ctk.CTkButton(
             grupo, text="",
             image=icone_lixeira,
@@ -74,15 +77,16 @@ def abrir_backup(root, editor_xml, status_var, entry_id):
             command=lambda: excluir_backup(caminho, grupo)
         ).pack(side="right", padx=5)
 
-    # Criar os botões de forma segura
     for nome_arquivo in arquivos:
         criar_botao_backup(nome_arquivo)
         
-    def exibir_comparacao(nome_arquivo, editor_xml):
+    def exibir_comparacao(nome_arquivo, editor_frame):
         caminho = os.path.join(pasta, nome_arquivo)
         with open(caminho, "r", encoding="utf-8") as f:
             raw_backup = f.read()
-        raw_atual = editor_xml.editor_texto.get("1.0", "end")
+
+        text_widget = editor_frame.editor_texto if hasattr(editor_frame, "editor_texto") else editor_frame
+        raw_atual = text_widget.get("1.0", "end")
 
         tags_backup = dividir_por_tags(raw_backup)
         tags_atual = dividir_por_tags(raw_atual)
@@ -117,7 +121,7 @@ def abrir_backup(root, editor_xml, status_var, entry_id):
         frame.grid_rowconfigure(0, weight=1)
         frame.grid_columnconfigure(0, weight=1)
         frame.grid_columnconfigure(1, weight=1)
-
+        
         matcher = SequenceMatcher(None, tags_backup, tags_atual)
         linha_atual = linha_backup = 1
 
@@ -144,6 +148,7 @@ def abrir_backup(root, editor_xml, status_var, entry_id):
 
                 linha_backup += 1
                 linha_atual += 1
+
         for txt in [txt_atual, txt_backup]:
             txt.tag_config("modificado", foreground="#000000", background="#fff7c0")
             txt.tag_config("adicao", foreground="#000000", background="#eaffea")
@@ -155,19 +160,19 @@ def abrir_backup(root, editor_xml, status_var, entry_id):
                 "Restaurar Backup",
                 "Deseja carregar este backup no editor?\n(É necessário clicar em SALVAR depois para aplicar no banco)"
             ):
-                editor_xml.delete("1.0", "end")
-                editor_xml.insert("end", raw_backup)
-                realcar_sintaxe_xml(editor_xml)
+                text_widget.delete("1.0", "end")
+                text_widget.insert("end", raw_backup)
+                realcar_sintaxe_xml(text_widget)
                 status_var.set(f"✅ Backup restaurado: {nome_arquivo}")
 
                 linhas_modificadas = []
                 backup_linhas = raw_backup.strip().splitlines()
-                atual_linhas = editor_xml.get("1.0", "end").strip().splitlines()
+                atual_linhas = text_widget.get("1.0", "end").strip().splitlines()
 
                 for i, (linha_b, linha_a) in enumerate(zip(backup_linhas, atual_linhas), start=1):
                     if linha_b.strip() != linha_a.strip():
                         linhas_modificadas.append(i)
 
-                destacar_linhas_editadas(editor_xml, linhas_modificadas)
+                destacar_linhas_editadas(text_widget, linhas_modificadas)
 
         ctk.CTkButton(comp, text="⏪ Restaurar este backup", command=restaurar_backup).pack(pady=10)

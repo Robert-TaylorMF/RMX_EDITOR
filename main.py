@@ -10,7 +10,7 @@ from sobre import mostrar_sobre
 from verificador import verificar_atualizacao
 from configuracao import carregar_bases, obter_base_selecionada
 from gerenciador_bases import abrir_gerenciador_de_bases
-from xml_operacoes import carregar_xml, salvar_xml
+from xml_operacoes import carregar_xml, salvar_xml, salvar_xml_por_guia
 from comparador import abrir_backup
 from atalhos import configurar_atalhos, desfazer, refazer
 from modulos.editor_com_linhas import criar_editor_com_linhas
@@ -19,7 +19,6 @@ from modulos.seletor_impressora import abrir_janela_impressao
 from modulos.regua_visual import destacar_ocorrencias, destacar_linhas_erro, destacar_linhas_editadas
 from utilitarios import (
     formatar_xml, salvar_backup, realcar_sintaxe_xml,
-    buscar_texto, substituir_proxima, substituir_todos,
     compactar_xml, extrair_conteudo_esocial, abrir_localizador,
     copiar_texto, colar_texto, atualizar_fonte_em_editor,
     aumentar_fonte, diminuir_fonte, exportar_xml, imprimir_xml,
@@ -80,15 +79,9 @@ Tooltip(btn_base, "Gerenciar Bases")
 
 btn_backup = CTkButton(menu_lateral, text="", image=icone_ver_backup, width=48, height=48,
                        fg_color="transparent", hover_color="#e0e0e0",
-                       command=lambda: abrir_backup(root, painel_guias.obter_editor_ativo(), status_var, entry_id))
+                       command=lambda: abrir_backup(root, painel_guias, painel_guias.obter_nome_guia_ativa(), status_var))
 btn_backup.pack(pady=8)
 Tooltip(btn_backup, "Ver Backups e Comparar")
-
-btn_backup = CTkButton(
-    menu_lateral, text="", image=icone_ver_backup, width=48, height=48,
-    fg_color="transparent", hover_color="#e0e0e0",
-    command=lambda: abrir_backup(root, painel_guias.obter_editor_ativo(), status_var, entry_id)
-)
 
 btn_att = CTkButton(menu_lateral, text="", image=icone_att, width=48, height=48,
                     fg_color="transparent", hover_color="#e0e0e0",
@@ -135,8 +128,10 @@ entry_id.grid(row=0, column=4, padx=5)
 CTkButton(frame1, text="Carregar", command=lambda: carregar_xml(
     base_selecionada_dict,
     entry_id.get(),
-    painel_guias.obter_editor_ativo().editor_texto,  # ⬅️ Aqui está a correção
-    status_var
+    painel_guias.obter_editor_ativo(),
+    status_var,
+    painel_guias,
+    painel_guias.obter_nome_guia_ativa()
 )).grid(row=0, column=5, padx=5)
 
 
@@ -153,12 +148,7 @@ Tooltip(btn_lupa, "Localizar e Substituir (Ctrl+F)")
 botao_salvar = CTkButton(
     frame_toolbar, text="", image=icone_salvar, width=48, height=48,
     fg_color="transparent", hover_color="#e0e0e0",
-    command=lambda: salvar_xml(
-        base_selecionada_dict,
-        entry_id.get(),
-        extrair_conteudo_esocial(compactar_xml(painel_guias.obter_editor_ativo().editor_texto.get("1.0", "end"))),
-        painel_guias.obter_editor_ativo()
-    )
+    command=lambda: salvar_xml_por_guia(painel_guias, painel_guias.obter_nome_guia_ativa())
 )
 botao_salvar.pack(side="left", padx=5)
 Tooltip(botao_salvar, "Salvar XML no Banco")
@@ -215,7 +205,7 @@ btn_diminuir.pack(side="left", padx=5)
 Tooltip(btn_diminuir, "Diminuir Fonte")
 
 # === Editor XML com Guias ===
-painel_guias = PainelDeGuias(root)
+painel_guias = PainelDeGuias(root, entry_id)
 painel_guias.pack(expand=True, fill="both", padx=10, pady=10)
 
 # === Barra de status ===

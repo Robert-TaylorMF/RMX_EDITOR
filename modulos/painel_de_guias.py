@@ -4,22 +4,21 @@ from PIL import Image
 from modulos.editor_com_linhas import criar_editor_com_linhas
 from utilitarios import realcar_sintaxe_xml
 from tooltip import Tooltip
+import tkinter as tk  # necessário para manipular entry_id
 
 class PainelDeGuias(ctk.CTkFrame):
-    def __init__(self, master):
+    def __init__(self, master, entry_id):
         super().__init__(master)
+        self.entry_id = entry_id
         self.contador = 0
-        self.editores = {}  # nome → (frame, editor)
+        self.editores = {}  # nome → {frame, editor, base, evento_id}
         self.botoes = {}    # nome → botão guia
 
-        # Painel superior com abas simuladas
         self.top_bar = ctk.CTkFrame(self)
         self.top_bar.pack(fill="x", padx=10, pady=(10, 0))
 
-        # Ícone do botão Nova Guia
         icone_nova_guia = CTkImage(light_image=Image.open("recursos/mais.ico"), size=(24, 24))
 
-        # Botão “Nova Guia” com imagem
         btn_nova = ctk.CTkButton(
             self.top_bar,
             text="",
@@ -33,18 +32,15 @@ class PainelDeGuias(ctk.CTkFrame):
         btn_nova.pack(side="left", padx=6)
         Tooltip(btn_nova, "Abrir nova guia")
 
-        # Área de conteúdo da guia
         self.area_guia = ctk.CTkFrame(self)
         self.area_guia.pack(expand=True, fill="both", padx=10, pady=10)
 
-        # Cria a primeira guia
         self.criar_guia()
 
     def criar_guia(self):
         self.contador += 1
         nome = f"Guia {self.contador}"
 
-        # Botão de guia + botão de fechar lado a lado
         frame_guia_btn = ctk.CTkFrame(self.top_bar, fg_color="transparent")
         frame_guia_btn.pack(side="left", padx=4)
 
@@ -72,24 +68,27 @@ class PainelDeGuias(ctk.CTkFrame):
 
         self.botoes[nome] = btn_guia
 
-        # Editor embutido
         frame_guia = ctk.CTkFrame(self.area_guia)
         editor = criar_editor_com_linhas(frame_guia)
         editor.pack(expand=True, fill="both", padx=10, pady=10)
         realcar_sintaxe_xml(editor.editor_texto)
 
-        self.editores[nome] = (frame_guia, editor)
+        self.editores[nome] = {
+            "frame": frame_guia,
+            "editor": editor,
+            "evento_id": None,
+            "base": None
+        }
 
         self.ativar_guia(nome)
 
     def ativar_guia(self, nome):
-        # Remove guia anterior
-        for f, _ in self.editores.values():
-            f.pack_forget()
+        # Oculta todas as guias
+        for guia in self.editores.values():
+            guia["frame"].pack_forget()
 
-        # Mostra guia atual
-        frame, _ = self.editores[nome]
-        frame.pack(expand=True, fill="both")
+        # Exibe a guia atual
+        self.editores[nome]["frame"].pack(expand=True, fill="both")
 
         # Destaque visual nos botões
         for nome_btn, btn in self.botoes.items():
@@ -98,28 +97,34 @@ class PainelDeGuias(ctk.CTkFrame):
             else:
                 btn.configure(fg_color="#333333", text_color="#cccccc")
 
+        # 🔄 Sincroniza o campo entry_id com o evento_id da guia ativa
+        evento_id = self.editores[nome].get("evento_id")
+        if evento_id is not None and self.entry_id:
+            self.entry_id.delete(0, tk.END)
+            self.entry_id.insert(0, str(evento_id))
+
     def fechar_guia(self, nome, frame_btn):
-        # Remover editor
         if nome in self.editores:
-            frame, _ = self.editores[nome]
-            frame.destroy()
+            self.editores[nome]["frame"].destroy()
             del self.editores[nome]
 
-        # Remover botão de guia
         if nome in self.botoes:
             del self.botoes[nome]
 
         frame_btn.destroy()
 
-        # Selecionar outra guia, se houver
         if self.editores:
             nova = next(iter(self.editores))
             self.ativar_guia(nova)
 
     def obter_editor_ativo(self):
-        for nome in self.editores:
-            frame, editor_frame = self.editores[nome]
-            if frame.winfo_ismapped():
-                return editor_frame
+        for nome, guia in self.editores.items():
+            if guia["frame"].winfo_ismapped():
+                return guia["editor"]
         return None
 
+    def obter_nome_guia_ativa(self):
+        for nome, guia in self.editores.items():
+            if guia["frame"].winfo_ismapped():
+                return nome
+        return None

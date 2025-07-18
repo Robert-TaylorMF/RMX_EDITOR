@@ -11,16 +11,18 @@ from datetime import datetime
 import xml.dom.minidom
 
 # 📋 Copiar texto selecionado do editor
-def copiar_texto(text_widget):
+def copiar_texto(editor_frame):
+    text_widget = editor_frame.editor_texto if hasattr(editor_frame, "editor_texto") else editor_frame
     try:
         texto = text_widget.get("sel.first", "sel.last")
         text_widget.clipboard_clear()
         text_widget.clipboard_append(texto)
     except tk.TclError:
-        pass  # nada selecionado
+        pass
 
 # 📥 Colar conteúdo do clipboard na posição atual do cursor
-def colar_texto(text_widget):
+def colar_texto(editor_frame):
+    text_widget = editor_frame.editor_texto if hasattr(editor_frame, "editor_texto") else editor_frame
     try:
         texto = text_widget.clipboard_get()
         text_widget.insert("insert", texto)
@@ -45,13 +47,13 @@ def salvar_backup(xml_antigo, evento_id):
         nome_arquivo = f"{pasta}/evento_{evento_id}_{timestamp}.xml"
         with open(nome_arquivo, "w", encoding="utf-8") as f:
             f.write(xml_antigo)
-        return nome_arquivo  # retorna o caminho para uso futuro
+        return nome_arquivo
     except Exception as e:
         messagebox.showerror("Erro ao salvar backup", str(e))
 
 # 🎨 Realça tags, atributos e valores no XML
-def realcar_sintaxe_xml(text_widget):
-    # Remove tags existentes
+def realcar_sintaxe_xml(editor_frame):
+    text_widget = editor_frame.editor_texto if hasattr(editor_frame, "editor_texto") else editor_frame
     text_widget.tag_delete("tag", "atributo", "valor")
 
     xml = text_widget.get("1.0", tk.END)
@@ -77,74 +79,13 @@ def realcar_sintaxe_xml(text_widget):
             v_fim = offset + v.end(0)
             text_widget.tag_add("valor", f"1.0 + {v_ini} chars", f"1.0 + {v_fim} chars")
 
-    # 🎨 Visual refinado com contraste para tema escuro
     text_widget.tag_config("tag", foreground="#00ccff")
     text_widget.tag_config("atributo", foreground="#ff7700")
     text_widget.tag_config("valor", foreground="#00ff99")
+    
+def abrir_localizador(editor_frame, root):
+    text_xml = editor_frame.editor_texto if hasattr(editor_frame, "editor_texto") else editor_frame
 
-# 🔍 Destaca todas as ocorrências do termo de busca
-def buscar_texto(entry_busca, text_widget):
-    termo = entry_busca.get()
-    text_widget.tag_remove("destacado", "1.0", "end")
-    if not termo:
-        return 0
-
-    inicio = "1.0"
-    primeira_pos = None
-    total = 0
-    while True:
-        pos = text_widget.search(termo, inicio, stopindex="end")
-        if not pos:
-            break
-        fim = f"{pos}+{len(termo)}c"
-        text_widget.tag_add("destacado", pos, fim)
-        if not primeira_pos:
-            primeira_pos = pos
-        inicio = fim
-        total += 1
-
-    text_widget.tag_config("destacado", foreground="black", background="#fff700")
-    if primeira_pos:
-        text_widget.mark_set("insert", primeira_pos)
-        text_widget.see(primeira_pos)
-
-    return total  # retorna total de ocorrências
-
-# 🔁 Substitui próxima ocorrência e retorna nova posição
-def substituir_proxima(entry_busca, entry_substituir, text_widget, posicao_substituicao):
-    termo = entry_busca.get()
-    novo = entry_substituir.get()
-    if not termo:
-        return "1.0"
-
-    start = text_widget.search(termo, posicao_substituicao, "end")
-    if not start:
-        return "1.0"
-
-    end = f"{start}+{len(termo)}c"
-    text_widget.delete(start, end)
-    text_widget.insert(start, novo)
-
-    nova_pos = f"{start}+{len(novo)}c"
-    text_widget.mark_set("insert", nova_pos)
-    text_widget.see(nova_pos)
-    return nova_pos
-
-# 🔁 Substitui todas ocorrências e realça resultado
-def substituir_todos(entry_busca, entry_substituir, text_widget):
-    termo = entry_busca.get()
-    novo = entry_substituir.get()
-    if termo:
-        conteudo = text_widget.get("1.0", "end")
-        atualizado = conteudo.replace(termo, novo)
-        text_widget.delete("1.0", "end")
-        text_widget.insert("end", atualizado)
-        ocorrencias = buscar_texto(entry_busca, text_widget)
-        realcar_sintaxe_xml(text_widget)
-        return ocorrencias
-    return 0
-
-def abrir_localizador(text_xml, root):
     janela = ctk.CTkToplevel(root)
     janela.title("Localizar e Substituir")
     janela.geometry("400x250")
@@ -188,7 +129,7 @@ def abrir_localizador(text_xml, root):
             novo_conteudo = conteudo.replace(termo, novo)
             text_xml.delete("1.0", "end")
             text_xml.insert("end", novo_conteudo)
-            realcar_sintaxe_xml(text_xml)
+            realcar_sintaxe_xml(editor_frame)
             resultado_var.set("Substituição realizada")
 
     def substituir_tudo():
@@ -206,48 +147,24 @@ def abrir_localizador(text_xml, root):
                 text_xml.insert(pos, novo)
                 pos = f"{pos}+{len(novo)}c"
                 total += 1
-            realcar_sintaxe_xml(text_xml)
+            realcar_sintaxe_xml(editor_frame)
             resultado_var.set(f"{total} substituição(ões) feita(s)")
 
     ctk.CTkButton(janela, text="🔍 Localizar", command=localizar).pack(pady=(10, 2))
     ctk.CTkButton(janela, text="↺ Substituir", command=substituir).pack(pady=2)
     ctk.CTkButton(janela, text="🔁 Substituir Todas", command=substituir_tudo).pack(pady=2)
     
+# 🔧 Compacta XML removendo quebras e espaços entre tags
 def compactar_xml(xml_str):
-    # Remove quebras de linha e espaços entre as tags
-    xml_compacto = re.sub(r">\s+<", "><", xml_str.strip())
-    return xml_compacto
+    return re.sub(r">\s+<", "><", xml_str.strip())
 
+# 🧾 Extrai apenas o conteúdo do <eSocial>
 def extrair_conteudo_esocial(xml_str):
-    """
-    Remove cabeçalho e retorna apenas o conteúdo a partir da tag <eSocial>
-    """
     xml_str = xml_str.strip()
     inicio = xml_str.find("<eSocial")
-    if inicio != -1:
-        return xml_str[inicio:]
-    return xml_str  # caso não encontre, retorna como está
+    return xml_str[inicio:] if inicio != -1 else xml_str
 
-def atualizar_fonte_em_editor(text_widget, nova_fonte):
-    """
-    Aplica a nova fonte no editor principal e na régua de linhas.
-    """
-    try:
-        text_widget.config(font=nova_fonte)
-        for child in text_widget.master.children.values():
-            if isinstance(child, tk.Text) and child["state"] == "disabled":
-                child.config(font=nova_fonte)
-    except Exception:
-        pass
-
-def aumentar_fonte(editor, fonte_editor):
-    fonte_editor[1] = min(36, fonte_editor[1] + 1)
-    atualizar_fonte_em_editor(editor, tuple(fonte_editor))
-
-def diminuir_fonte(editor, fonte_editor):
-    fonte_editor[1] = max(8, fonte_editor[1] - 1)
-    atualizar_fonte_em_editor(editor, tuple(fonte_editor))
-
+# 🔠 Atualiza fonte no editor e régua lateral
 def atualizar_fonte_em_editor(editor_frame, fonte):
     try:
         editor_texto = editor_frame.editor_texto
@@ -256,13 +173,18 @@ def atualizar_fonte_em_editor(editor_frame, fonte):
         linha_texto.config(font=fonte)
     except Exception as e:
         print(f"Erro ao atualizar fonte: {e}")
-        
-def exportar_xml(editor_frame):
-    if hasattr(editor_frame, "editor_texto"):
-        editor = editor_frame.editor_texto
-    else:
-        editor = editor_frame  # fallback
 
+def aumentar_fonte(editor_frame, fonte_editor):
+    fonte_editor[1] = min(36, fonte_editor[1] + 1)
+    atualizar_fonte_em_editor(editor_frame, tuple(fonte_editor))
+
+def diminuir_fonte(editor_frame, fonte_editor):
+    fonte_editor[1] = max(8, fonte_editor[1] - 1)
+    atualizar_fonte_em_editor(editor_frame, tuple(fonte_editor))
+
+# 📤 Exporta o XML para um arquivo
+def exportar_xml(editor_frame):
+    editor = editor_frame.editor_texto if hasattr(editor_frame, "editor_texto") else editor_frame
     conteudo = editor.get("1.0", "end").strip()
     if not conteudo:
         return
@@ -276,24 +198,20 @@ def exportar_xml(editor_frame):
         with open(caminho, "w", encoding="utf-8") as f:
             f.write(conteudo)
 
+# 🖨️ Imprime o XML com seleção de impressora
 def imprimir_xml(editor_frame):
-    if hasattr(editor_frame, "editor_texto"):
-        editor = editor_frame.editor_texto
-    else:
-        editor = editor_frame
-
+    editor = editor_frame.editor_texto if hasattr(editor_frame, "editor_texto") else editor_frame
     conteudo = editor.get("1.0", "end").strip()
     if not conteudo:
         return
 
-    # Salva o XML como temporário
     with tempfile.NamedTemporaryFile(delete=False, suffix=".txt", mode="w", encoding="utf-8") as temp:
         temp.write(conteudo)
         caminho_temp = temp.name
 
-    # 🖨️ Abre janela para o usuário escolher impressora
     impressora_padrao = win32print.GetDefaultPrinter()
     lista = [printer[2] for printer in win32print.EnumPrinters(2)]
+
     escolha = tk.Toplevel()
     escolha.title("Escolher impressora")
     escolha.geometry("400x120")
@@ -308,8 +226,6 @@ def imprimir_xml(editor_frame):
     def enviar():
         nome = var_impressora.get()
         escolha.destroy()
-
-        # Envia pra impressão usando win32api
         try:
             win32print.SetDefaultPrinter(nome)
             win32api.ShellExecute(0, "print", caminho_temp, None, ".", 0)
@@ -318,19 +234,14 @@ def imprimir_xml(editor_frame):
 
     tk.Button(escolha, text="Imprimir", command=enviar).pack(pady=10)
 
+# 📄 Gera PDF estilizado com ReportLab
 from reportlab.lib.pagesizes import A4
 from reportlab.lib.styles import getSampleStyleSheet
 from reportlab.platypus import SimpleDocTemplate, Preformatted
 from reportlab.lib.units import mm
-import os
-import tempfile
 
 def gerar_e_abrir_pdf_xml(editor_frame):
-    if hasattr(editor_frame, "editor_texto"):
-        editor = editor_frame.editor_texto
-    else:
-        editor = editor_frame
-
+    editor = editor_frame.editor_texto if hasattr(editor_frame, "editor_texto") else editor_frame
     conteudo = editor.get("1.0", "end").strip()
     if not conteudo:
         print("⚠️ Nenhum conteúdo para gerar PDF.")
@@ -349,12 +260,6 @@ def gerar_e_abrir_pdf_xml(editor_frame):
         elemento = Preformatted(conteudo, estilo)
         doc.build([elemento])
 
-        # 📂 Abre o PDF no visualizador padrão (ideal para impressão)
         os.startfile(caminho_pdf)
     except Exception as e:
         print("❌ Erro ao gerar PDF do XML:", e)
-
-
-
-
-
