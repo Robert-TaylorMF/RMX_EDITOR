@@ -1,6 +1,10 @@
 import customtkinter as ctk
 import tkinter as tk
 from tkinter import messagebox
+from tkinter import filedialog
+import tempfile
+import win32print
+import win32api
 import os
 import re
 from datetime import datetime
@@ -252,6 +256,104 @@ def atualizar_fonte_em_editor(editor_frame, fonte):
         linha_texto.config(font=fonte)
     except Exception as e:
         print(f"Erro ao atualizar fonte: {e}")
+        
+def exportar_xml(editor_frame):
+    if hasattr(editor_frame, "editor_texto"):
+        editor = editor_frame.editor_texto
+    else:
+        editor = editor_frame  # fallback
+
+    conteudo = editor.get("1.0", "end").strip()
+    if not conteudo:
+        return
+
+    caminho = filedialog.asksaveasfilename(
+        defaultextension=".xml",
+        filetypes=[("Arquivos XML", "*.xml")],
+        title="Exportar XML"
+    )
+    if caminho:
+        with open(caminho, "w", encoding="utf-8") as f:
+            f.write(conteudo)
+
+def imprimir_xml(editor_frame):
+    if hasattr(editor_frame, "editor_texto"):
+        editor = editor_frame.editor_texto
+    else:
+        editor = editor_frame
+
+    conteudo = editor.get("1.0", "end").strip()
+    if not conteudo:
+        return
+
+    # Salva o XML como temporário
+    with tempfile.NamedTemporaryFile(delete=False, suffix=".txt", mode="w", encoding="utf-8") as temp:
+        temp.write(conteudo)
+        caminho_temp = temp.name
+
+    # 🖨️ Abre janela para o usuário escolher impressora
+    impressora_padrao = win32print.GetDefaultPrinter()
+    lista = [printer[2] for printer in win32print.EnumPrinters(2)]
+    escolha = tk.Toplevel()
+    escolha.title("Escolher impressora")
+    escolha.geometry("400x120")
+    escolha.grab_set()
+
+    var_impressora = tk.StringVar(value=impressora_padrao)
+
+    tk.Label(escolha, text="Escolha a impressora:", font=("Arial", 12)).pack(pady=10)
+    box = tk.OptionMenu(escolha, var_impressora, *lista)
+    box.pack(pady=5)
+
+    def enviar():
+        nome = var_impressora.get()
+        escolha.destroy()
+
+        # Envia pra impressão usando win32api
+        try:
+            win32print.SetDefaultPrinter(nome)
+            win32api.ShellExecute(0, "print", caminho_temp, None, ".", 0)
+        except Exception as e:
+            print("Erro ao imprimir:", e)
+
+    tk.Button(escolha, text="Imprimir", command=enviar).pack(pady=10)
+
+from reportlab.lib.pagesizes import A4
+from reportlab.lib.styles import getSampleStyleSheet
+from reportlab.platypus import SimpleDocTemplate, Preformatted
+from reportlab.lib.units import mm
+import os
+import tempfile
+
+def gerar_e_abrir_pdf_xml(editor_frame):
+    if hasattr(editor_frame, "editor_texto"):
+        editor = editor_frame.editor_texto
+    else:
+        editor = editor_frame
+
+    conteudo = editor.get("1.0", "end").strip()
+    if not conteudo:
+        print("⚠️ Nenhum conteúdo para gerar PDF.")
+        return
+
+    try:
+        caminho_pdf = os.path.join(tempfile.gettempdir(), "xml_gerado.pdf")
+        doc = SimpleDocTemplate(caminho_pdf, pagesize=A4, rightMargin=20, leftMargin=20, topMargin=20, bottomMargin=20)
+
+        estilo = getSampleStyleSheet()["Code"]
+        estilo.fontName = "Courier"
+        estilo.fontSize = 10
+        estilo.leading = 12
+        estilo.leftIndent = 0
+
+        elemento = Preformatted(conteudo, estilo)
+        doc.build([elemento])
+
+        # 📂 Abre o PDF no visualizador padrão (ideal para impressão)
+        os.startfile(caminho_pdf)
+    except Exception as e:
+        print("❌ Erro ao gerar PDF do XML:", e)
+
 
 
 

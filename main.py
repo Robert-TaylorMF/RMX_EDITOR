@@ -15,13 +15,15 @@ from comparador import abrir_backup
 from atalhos import configurar_atalhos, desfazer, refazer
 from modulos.editor_com_linhas import criar_editor_com_linhas
 from modulos.painel_de_guias import PainelDeGuias
+from modulos.seletor_impressora import abrir_janela_impressao
 from modulos.regua_visual import destacar_ocorrencias, destacar_linhas_erro, destacar_linhas_editadas
 from utilitarios import (
     formatar_xml, salvar_backup, realcar_sintaxe_xml,
     buscar_texto, substituir_proxima, substituir_todos,
     compactar_xml, extrair_conteudo_esocial, abrir_localizador,
     copiar_texto, colar_texto, atualizar_fonte_em_editor,
-    aumentar_fonte, diminuir_fonte
+    aumentar_fonte, diminuir_fonte, exportar_xml, imprimir_xml,
+    gerar_e_abrir_pdf_xml
 )
 
 # === Variáveis Globais ===
@@ -63,6 +65,8 @@ icone_copiar       = ctk.CTkImage(light_image=Image.open("recursos/copiar.ico"),
 icone_colar        = ctk.CTkImage(light_image=Image.open("recursos/colar.ico"), size=(24, 24))
 icone_aumentar_t   = ctk.CTkImage(light_image=Image.open("recursos/aumentar_texto.ico"), size=(24, 24))
 icone_diminuir_t   = ctk.CTkImage(light_image=Image.open("recursos/diminuir_texto.ico"), size=(24, 24))
+icone_exportar     = ctk.CTkImage(light_image=Image.open("recursos/exportar.ico"), size=(24, 24))
+icone_imprimir     = ctk.CTkImage(light_image=Image.open("recursos/imprimir.ico"), size=(24, 24))
 
 # === Menu lateral ===
 menu_lateral = CTkFrame(root, width=160, corner_radius=0)
@@ -171,6 +175,20 @@ btn_colar = CTkButton(frame_toolbar, text="", image=icone_colar, width=38, heigh
                       command=lambda: colar_texto(painel_guias.obter_editor_ativo()))
 btn_colar.pack(side="left", padx=5)
 Tooltip(btn_colar, "Colar conteúdo (Ctrl+V)")
+
+btn_exportar = CTkButton(frame_toolbar, text="", image=icone_exportar, width=38, height=38,
+                         fg_color="transparent", hover_color="#e0e0e0",
+                         command=lambda: exportar_xml(painel_guias.obter_editor_ativo()))
+btn_exportar.pack(side="left", padx=5)
+Tooltip(btn_exportar, "Exportar para arquivo XML")
+
+btn_pdf = CTkButton(
+    frame_toolbar, text="", image=icone_imprimir, width=38, height=38,
+    fg_color="transparent", hover_color="#e0e0e0",
+    command=lambda: gerar_e_abrir_pdf_xml(painel_guias.obter_editor_ativo())
+)
+btn_pdf.pack(side="left", padx=5)
+Tooltip(btn_pdf, "Imprimir")
 
 btn_desfazer = CTkButton(frame_toolbar, text="", image=icone_desfazer, width=38, height=38,
                          fg_color="transparent", hover_color="#e0e0e0",
