@@ -14,12 +14,14 @@ from xml_operacoes import carregar_xml, salvar_xml
 from comparador import abrir_backup
 from atalhos import configurar_atalhos, desfazer, refazer
 from modulos.editor_com_linhas import criar_editor_com_linhas
+from modulos.painel_de_guias import PainelDeGuias
 from modulos.regua_visual import destacar_ocorrencias, destacar_linhas_erro, destacar_linhas_editadas
 from utilitarios import (
     formatar_xml, salvar_backup, realcar_sintaxe_xml,
     buscar_texto, substituir_proxima, substituir_todos,
     compactar_xml, extrair_conteudo_esocial, abrir_localizador,
-    copiar_texto, colar_texto, atualizar_fonte_em_editor
+    copiar_texto, colar_texto, atualizar_fonte_em_editor,
+    aumentar_fonte, diminuir_fonte
 )
 
 # === Variáveis Globais ===
@@ -27,11 +29,14 @@ bases_disponiveis = carregar_bases()
 base_selecionada_dict = None
 versao = "1.3"
 fonte_editor = ["Consolas", 12]
+contagem_janelas_xml = [0] 
 
 # === Função para ajustar a fonte do editor de texto ===
 def ajustar_fonte(delta):
     fonte_editor[1] = max(8, min(36, fonte_editor[1] + delta))
-    atualizar_fonte_em_editor(text_xml, tuple(fonte_editor))
+    editor_ativo = painel_guias.obter_editor_ativo().editor_texto
+    if editor_ativo:
+        atualizar_fonte_em_editor(editor_ativo, tuple(fonte_editor))
 
 # === Splash screen ===
 mostrar_splash()
@@ -71,9 +76,15 @@ Tooltip(btn_base, "Gerenciar Bases")
 
 btn_backup = CTkButton(menu_lateral, text="", image=icone_ver_backup, width=48, height=48,
                        fg_color="transparent", hover_color="#e0e0e0",
-                       command=lambda: abrir_backup(root, text_xml, status_var, entry_id))
+                       command=lambda: abrir_backup(root, painel_guias.obter_editor_ativo(), status_var, entry_id))
 btn_backup.pack(pady=8)
 Tooltip(btn_backup, "Ver Backups e Comparar")
+
+btn_backup = CTkButton(
+    menu_lateral, text="", image=icone_ver_backup, width=48, height=48,
+    fg_color="transparent", hover_color="#e0e0e0",
+    command=lambda: abrir_backup(root, painel_guias.obter_editor_ativo(), status_var, entry_id)
+)
 
 btn_att = CTkButton(menu_lateral, text="", image=icone_att, width=48, height=48,
                     fg_color="transparent", hover_color="#e0e0e0",
@@ -118,8 +129,12 @@ entry_id = CTkEntry(frame1, width=350)
 entry_id.grid(row=0, column=4, padx=5)
 
 CTkButton(frame1, text="Carregar", command=lambda: carregar_xml(
-    base_selecionada_dict, entry_id.get(), text_xml, status_var
+    base_selecionada_dict,
+    entry_id.get(),
+    painel_guias.obter_editor_ativo().editor_texto,  # ⬅️ Aqui está a correção
+    status_var
 )).grid(row=0, column=5, padx=5)
+
 
 # === Barra de ferramentas ===
 frame_toolbar = CTkFrame(root, height=44)
@@ -127,60 +142,63 @@ frame_toolbar.pack(pady=5, anchor="w", fill="x", padx=10)
 
 btn_lupa = CTkButton(frame_toolbar, text="", image=icone_localizar, width=48, height=48,
                      fg_color="transparent", hover_color="#e0e0e0",
-                     command=lambda: abrir_localizador(text_xml, root))
+                     command=lambda: abrir_localizador(painel_guias.obter_editor_ativo(), root))
 btn_lupa.pack(side="left", padx=5)
 Tooltip(btn_lupa, "Localizar e Substituir (Ctrl+F)")
 
-botao_salvar = CTkButton(frame_toolbar, text="", image=icone_salvar, width=48, height=48,
-                         fg_color="transparent", hover_color="#e0e0e0",
-                         command=lambda: salvar_xml(
-                             base_selecionada_dict,
-                             entry_id.get(),
-                             extrair_conteudo_esocial(compactar_xml(text_xml.get("1.0", "end"))),
-                             text_xml
-                         ))
+botao_salvar = CTkButton(
+    frame_toolbar, text="", image=icone_salvar, width=48, height=48,
+    fg_color="transparent", hover_color="#e0e0e0",
+    command=lambda: salvar_xml(
+        base_selecionada_dict,
+        entry_id.get(),
+        extrair_conteudo_esocial(compactar_xml(painel_guias.obter_editor_ativo().editor_texto.get("1.0", "end"))),
+        painel_guias.obter_editor_ativo()
+    )
+)
 botao_salvar.pack(side="left", padx=5)
 Tooltip(botao_salvar, "Salvar XML no Banco")
 
+
 btn_copiar = CTkButton(frame_toolbar, text="", image=icone_copiar, width=38, height=38,
                        fg_color="transparent", hover_color="#e0e0e0",
-                       command=lambda: copiar_texto(text_xml))
+                       command=lambda: copiar_texto(painel_guias.obter_editor_ativo()))
 btn_copiar.pack(side="left", padx=5)
 Tooltip(btn_copiar, "Copiar texto selecionado (Ctrl+C)")
 
 btn_colar = CTkButton(frame_toolbar, text="", image=icone_colar, width=38, height=38,
                       fg_color="transparent", hover_color="#e0e0e0",
-                      command=lambda: colar_texto(text_xml))
+                      command=lambda: colar_texto(painel_guias.obter_editor_ativo()))
 btn_colar.pack(side="left", padx=5)
 Tooltip(btn_colar, "Colar conteúdo (Ctrl+V)")
 
 btn_desfazer = CTkButton(frame_toolbar, text="", image=icone_desfazer, width=38, height=38,
                          fg_color="transparent", hover_color="#e0e0e0",
-                         command=lambda: desfazer(text_xml))
+                         command=lambda: desfazer(painel_guias.obter_editor_ativo()))
 btn_desfazer.pack(side="left", padx=5)
 Tooltip(btn_desfazer, "Desfazer (Ctrl+Z)")
 
 btn_refazer = CTkButton(frame_toolbar, text="", image=icone_refazer, width=38, height=38,
                         fg_color="transparent", hover_color="#e0e0e0",
-                        command=lambda: refazer(text_xml))
+                        command=lambda: refazer(painel_guias.obter_editor_ativo()))
 btn_refazer.pack(side="left", padx=5)
 Tooltip(btn_refazer, "Refazer (Ctrl+Y)")
 
 btn_aumentar = CTkButton(frame_toolbar, text="", image=icone_aumentar_t, width=38, height=38,
                          fg_color="transparent", hover_color="#e0e0e0",
-                         command=lambda: ajustar_fonte(1))
+                         command=lambda: aumentar_fonte(painel_guias.obter_editor_ativo(), fonte_editor))
 btn_aumentar.pack(side="left", padx=5)
 Tooltip(btn_aumentar, "Aumentar Fonte")
 
-btn_diminuir = CTkButton(frame_toolbar, text="",image=icone_diminuir_t, width=38, height=38,
+btn_diminuir = CTkButton(frame_toolbar, text="", image=icone_diminuir_t, width=38, height=38,
                          fg_color="transparent", hover_color="#e0e0e0",
-                         command=lambda: ajustar_fonte(-1))
+                         command=lambda: diminuir_fonte(painel_guias.obter_editor_ativo(), fonte_editor))
 btn_diminuir.pack(side="left", padx=5)
 Tooltip(btn_diminuir, "Diminuir Fonte")
 
-
-# === Editor XML com numeração ===
-text_xml = criar_editor_com_linhas(root)
+# === Editor XML com Guias ===
+painel_guias = PainelDeGuias(root)
+painel_guias.pack(expand=True, fill="both", padx=10, pady=10)
 
 # === Barra de status ===
 CTkLabel(root, textvariable=status_var, text_color="skyblue").pack(pady=5)
@@ -189,10 +207,18 @@ CTkLabel(root, textvariable=status_var, text_color="skyblue").pack(pady=5)
 ctk.set_appearance_mode("dark")
 ctk.set_default_color_theme("blue")
 
-configurar_atalhos(root, text_xml, status_var, base_selecionada_dict, entry_id, botao_salvar)
+configurar_atalhos(
+    root,
+    painel_guias.obter_editor_ativo(),
+    status_var,
+    base_selecionada_dict,
+    entry_id,
+    botao_salvar
+)
+
 
 # === Aplicar marcador na inicialização (ou após carregamento)
-destacar_linhas_editadas(text_xml, [1])
+#destacar_linhas_editadas(text_xml, [1])
 
 # === Loop principal ===
 root.mainloop()

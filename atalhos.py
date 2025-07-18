@@ -24,4 +24,3 @@ def configurar_atalhos(root, text_xml, status_var, base_config, entry_id, botao_
     root.bind("<Control-z>", lambda e: desfazer(text_xml))
     root.bind("<Control-y>", lambda e: refazer(text_xml))
     root.bind("<Control-c>", lambda e: root.clipboard_clear() or root.clipboard_append(text_xml.get("sel.first", "sel.last")))
-    # ❌ Não interceptar Ctrl+V manualmente — o widget já trata nativamente!

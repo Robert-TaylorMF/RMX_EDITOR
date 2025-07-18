@@ -1,24 +1,34 @@
 import tkinter as tk
 from modulos.scroll_canvas import ScrollCanvas
 
-def criar_editor_com_linhas(pai, fonte=("Consolas", 12), bg="#1e1e1e", fg="white"):
+def criar_editor_com_linhas(pai, fonte=("Consolas", 12), bg="#1a1a1a", fg="white"):
     # Frame principal do editor
-    frame_editor = tk.Frame(pai)
-    frame_editor.pack(fill="both", expand=True, padx=10, pady=10)
+    frame_editor = tk.Frame(pai, bg=bg, bd=0, highlightthickness=0)
+    frame_editor.pack(fill="both", expand=True, padx=0, pady=0)
 
     # Régua lateral com numeração de linhas
-    linha_numero = tk.Text(frame_editor, width=4, padx=4, bg="#2b2b2b", fg="gray",
-                           font=fonte, state="disabled", relief="flat")
+    linha_numero = tk.Text(
+        frame_editor, width=4, padx=4,
+        bg="#1a1a1a", fg="#888888",
+        font=fonte, state="disabled",
+        relief="flat", borderwidth=0,
+        highlightthickness=0
+    )
     linha_numero.pack(side="left", fill="y")
     linha_numero.configure(cursor="arrow", takefocus=0)
 
-    # Bloqueia interação com a régua
     for evento in ["<MouseWheel>", "<Button-4>", "<Button-5>", "<Key>", "<ButtonPress-1>", "<B1-Motion>"]:
         linha_numero.bind(evento, lambda e: "break")
 
     # Editor principal de texto XML
-    text_xml = tk.Text(frame_editor, wrap="none", font=fonte,
-                       bg=bg, fg=fg, insertbackground=fg, undo=True)
+    text_xml = tk.Text(
+        frame_editor,
+        wrap="none", font=fonte,
+        bg=bg, fg=fg,
+        insertbackground=fg,
+        undo=True, relief="flat",
+        borderwidth=0, highlightthickness=0
+    )
     text_xml.pack(side="left", fill="both", expand=True)
 
     # Scrollbar personalizada com Canvas
@@ -29,7 +39,6 @@ def criar_editor_com_linhas(pai, fonte=("Consolas", 12), bg="#1e1e1e", fg="white
     # Tag para destacar a linha atual
     text_xml.tag_configure("linha_atual", background="#2e2e2e")
 
-    # Atualiza a numeração lateral
     def atualizar_linhas(event=None):
         linha_numero.config(state="normal")
         linha_numero.delete("1.0", "end")
@@ -42,28 +51,22 @@ def criar_editor_com_linhas(pai, fonte=("Consolas", 12), bg="#1e1e1e", fg="white
         linha_numero.config(state="disabled")
         linha_numero.yview_moveto(text_xml.yview()[0])
 
-    # Realça a linha atual do cursor
     def realcar_linha_atual(event=None):
         text_xml.tag_remove("linha_atual", "1.0", "end")
         linha = text_xml.index("insert").split(".")[0]
-        inicio = f"{linha}.0"
-        fim = f"{linha}.end"
-        text_xml.tag_add("linha_atual", inicio, fim)
+        text_xml.tag_add("linha_atual", f"{linha}.0 linestart", f"{linha}.0 lineend +1c")
+        text_xml.tag_lower("linha_atual")
 
-    # Dispara as atualizações visuais
     def disparar_atualizacao(event=None):
         atualizar_linhas()
         realcar_linha_atual()
 
-    # Escuta eventos manuais
     eventos = ["<KeyRelease>", "<ButtonRelease-1>", "<MouseWheel>", "<Configure>"]
     for evento in eventos:
         text_xml.bind(evento, disparar_atualizacao)
 
-    # Escuta modificações programáticas (como ao carregar XML)
     text_xml.bind("<<Modified>>", disparar_atualizacao)
 
-    # Monitoramento contínuo (reforço)
     def monitorar_modificacao():
         if text_xml.edit_modified():
             disparar_atualizacao()
@@ -72,8 +75,11 @@ def criar_editor_com_linhas(pai, fonte=("Consolas", 12), bg="#1e1e1e", fg="white
 
     monitorar_modificacao()
 
-    # Inicializa visuais
     atualizar_linhas()
     realcar_linha_atual()
 
-    return text_xml
+    # ✅ Adiciona atributos no frame para acesso externo
+    frame_editor.editor_texto = text_xml
+    frame_editor.linha_texto = linha_numero
+
+    return frame_editor

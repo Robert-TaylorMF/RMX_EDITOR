@@ -236,6 +236,23 @@ def atualizar_fonte_em_editor(text_widget, nova_fonte):
     except Exception:
         pass
 
+def aumentar_fonte(editor, fonte_editor):
+    fonte_editor[1] = min(36, fonte_editor[1] + 1)
+    atualizar_fonte_em_editor(editor, tuple(fonte_editor))
+
+def diminuir_fonte(editor, fonte_editor):
+    fonte_editor[1] = max(8, fonte_editor[1] - 1)
+    atualizar_fonte_em_editor(editor, tuple(fonte_editor))
+
+def atualizar_fonte_em_editor(editor_frame, fonte):
+    try:
+        editor_texto = editor_frame.editor_texto
+        linha_texto = editor_frame.linha_texto
+        editor_texto.config(font=fonte)
+        linha_texto.config(font=fonte)
+    except Exception as e:
+        print(f"Erro ao atualizar fonte: {e}")
+
 
 
 
