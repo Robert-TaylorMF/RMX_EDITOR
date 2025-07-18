@@ -28,15 +28,15 @@ def refazer(editor_frame):
 def configurar_atalhos(root, painel_guias, status_var, base_config, entry_id, botao_salvar):
     def obter_text_widget():
         editor_frame = painel_guias.obter_editor_ativo()
-        if editor_frame is None:
-            return None
-        return editor_frame.editor_texto if hasattr(editor_frame, "editor_texto") else editor_frame
+        if editor_frame and hasattr(editor_frame, "editor_texto"):
+            return editor_frame.editor_texto
+        return None
 
     root.bind_all("<Control-s>", lambda e: botao_salvar.invoke())
 
     root.bind("<Control-f>", lambda e: abrir_localizador(obter_text_widget(), root))
 
-    root.bind_all("<Control-b>", lambda e: abrir_backup(root, obter_text_widget(), status_var))
+    root.bind_all("<Control-b>", lambda e: abrir_backup(root, painel_guias, painel_guias.obter_nome_guia_ativa(), status_var))
 
     root.bind("<Control-z>", lambda e: desfazer(painel_guias.obter_editor_ativo()))
     root.bind("<Control-y>", lambda e: refazer(painel_guias.obter_editor_ativo()))

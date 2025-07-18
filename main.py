@@ -215,15 +215,7 @@ CTkLabel(root, textvariable=status_var, text_color="skyblue").pack(pady=5)
 ctk.set_appearance_mode("dark")
 ctk.set_default_color_theme("blue")
 
-configurar_atalhos(
-    root,
-    painel_guias.obter_editor_ativo(),
-    status_var,
-    base_selecionada_dict,
-    entry_id,
-    botao_salvar
-)
-
+configurar_atalhos(root, painel_guias, status_var, base_selecionada_dict, entry_id, botao_salvar)
 
 # === Aplicar marcador na inicialização (ou após carregamento)
 #destacar_linhas_editadas(text_xml, [1])
