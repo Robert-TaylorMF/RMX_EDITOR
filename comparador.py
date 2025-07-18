@@ -3,14 +3,12 @@ import customtkinter as ctk
 import tkinter as tk
 from tkinter import messagebox
 from utilitarios import realcar_sintaxe_xml, formatar_xml
+from modulos.regua_visual import destacar_linhas_editadas
 import re
 from difflib import SequenceMatcher
 
 def abrir_backup(root, text_xml, status_var, entry_id):
-    import os
     import time
-    import tkinter as tk
-    from tkinter import messagebox
 
     pasta = "backups_xml"
     if not os.path.exists(pasta):
@@ -33,7 +31,7 @@ def abrir_backup(root, text_xml, status_var, entry_id):
     ctk.CTkLabel(janela, text=f"Backups para o evento: {id_evento}", font=("Arial", 14, "bold")).pack(pady=(5, 0))
     frame_lista = ctk.CTkScrollableFrame(janela, width=780, height=220, corner_radius=6)
     frame_lista.pack(pady=5)
-
+    
     arquivos = sorted([
         f for f in os.listdir(pasta)
         if f.endswith(".xml") and id_evento in f
@@ -88,9 +86,9 @@ def abrir_backup(root, text_xml, status_var, entry_id):
                                     hover_color="#a30000", text_color="white",
                                     command=lambda arq=caminho: excluir_backup(arq))
         btn_excluir.place(in_=botao, relx=0.95, rely=0.5, anchor="e")
-
-    def dividir_por_tags(xml_str):
-        return re.findall(r"<[^>]+>[^<]*</[^>]+>", formatar_xml(xml_str))
+        
+        def dividir_por_tags(xml_str):
+            return re.findall(r"<[^>]+>[^<]*</[^>]+>", formatar_xml(xml_str))
 
     def exibir_comparacao(nome):
         caminho = os.path.join(pasta, nome)
@@ -123,11 +121,8 @@ def abrir_backup(root, text_xml, status_var, entry_id):
         frame = ctk.CTkFrame(comp)
         frame.pack(expand=True, fill="both", padx=10, pady=10)
 
-        import tkinter as tk
-        txt_atual = tk.Text(frame, wrap="word", font=("Consolas", 12))
-        txt_backup = tk.Text(frame, wrap="word", font=("Consolas", 12))
-        for txt in [txt_atual, txt_backup]:
-            txt.configure(bg="#1e1e1e", fg="white", insertbackground="white")
+        txt_atual = tk.Text(frame, wrap="word", font=("Consolas", 12), bg="#1e1e1e", fg="white", insertbackground="white")
+        txt_backup = tk.Text(frame, wrap="word", font=("Consolas", 12), bg="#1e1e1e", fg="white", insertbackground="white")
 
         txt_atual.grid(row=0, column=0, padx=(5, 3), sticky="nsew")
         txt_backup.grid(row=0, column=1, padx=(3, 5), sticky="nsew")
@@ -175,4 +170,15 @@ def abrir_backup(root, text_xml, status_var, entry_id):
                 realcar_sintaxe_xml(text_xml)
                 status_var.set(f"✅ Backup restaurado: {nome}")
 
+                # Detectar e destacar linhas modificadas
+                linhas_modificadas = []
+                backup_linhas = raw_backup.strip().splitlines()
+                atual_linhas = text_xml.get("1.0", "end").strip().splitlines()
+                for i, (linha_b, linha_a) in enumerate(zip(backup_linhas, atual_linhas), start=1):
+                    if linha_b.strip() != linha_a.strip():
+                        linhas_modificadas.append(i)
+                destacar_linhas_editadas(text_xml, linhas_modificadas)
+
         ctk.CTkButton(comp, text="⏪ Restaurar este backup", command=restaurar_backup).pack(pady=10)
+    
+    

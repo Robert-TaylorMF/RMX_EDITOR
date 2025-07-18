@@ -32,6 +32,9 @@ def carregar_xml(base_selecionada, evento_id, text_widget, status_var):
             messagebox.showinfo("Não encontrado", f"Nenhum evento com ID {evento_id}.")
     except Exception as e:
         messagebox.showerror("Erro", f"Falha ao carregar XML: {e}")
+        
+    text_widget.edit_modified(True)
+    text_widget.event_generate("<<Modified>>")
 
 def salvar_xml(base_selecionada, evento_id, novo_xml, text_widget):
     if not base_selecionada:

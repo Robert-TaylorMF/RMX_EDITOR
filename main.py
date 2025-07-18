@@ -1,42 +1,54 @@
 # === Importações ===
+import tkinter as tk
 import pyperclip
 import customtkinter as ctk
 from customtkinter import CTk, CTkLabel, CTkButton, CTkEntry, CTkTextbox, CTkComboBox, CTkFrame
-import tkinter as tk
-from tooltip import Tooltip
 from PIL import Image
-from configuracao import carregar_bases, obter_base_selecionada
-from verificador import verificar_atualizacao
-from xml_operacoes import carregar_xml, salvar_xml
+from tooltip import Tooltip
 from splash import mostrar_splash
 from sobre import mostrar_sobre
+from verificador import verificar_atualizacao
+from configuracao import carregar_bases, obter_base_selecionada
+from gerenciador_bases import abrir_gerenciador_de_bases
+from xml_operacoes import carregar_xml, salvar_xml
 from comparador import abrir_backup
 from atalhos import configurar_atalhos, desfazer, refazer
-from gerenciador_bases import abrir_gerenciador_de_bases
 from modulos.editor_com_linhas import criar_editor_com_linhas
+from modulos.regua_visual import destacar_ocorrencias, destacar_linhas_erro, destacar_linhas_editadas
 from utilitarios import (
     formatar_xml, salvar_backup, realcar_sintaxe_xml,
     buscar_texto, substituir_proxima, substituir_todos,
     compactar_xml, extrair_conteudo_esocial, abrir_localizador,
-    copiar_texto, colar_texto
+    copiar_texto, colar_texto, atualizar_fonte_em_editor
 )
 
-# === Inicialização de variáveis globais ===
+# === Variáveis Globais ===
 bases_disponiveis = carregar_bases()
 base_selecionada_dict = None
 versao = "1.3"
+fonte_editor = ["Consolas", 12]
+
+# === Função para ajustar a fonte do editor de texto ===
+def ajustar_fonte(delta):
+    fonte_editor[1] = max(8, min(36, fonte_editor[1] + delta))
+    atualizar_fonte_em_editor(text_xml, tuple(fonte_editor))
 
 # === Splash screen ===
 mostrar_splash()
 
 # === Janela principal ===
 root = CTk()
+root.iconbitmap("recursos/xmleditor.ico")
+root.title(f"XMLEditor RM – Editor de XML eSocial v{versao}")
+root.state("zoomed")
+root.after(100, lambda: root.state("zoomed"))
+root.minsize(width=1350, height=740)
 
 # === Ícones ===
 icone_base         = ctk.CTkImage(light_image=Image.open("recursos/bancos-de-dados.ico"), size=(36, 36))
 icone_att          = ctk.CTkImage(light_image=Image.open("recursos/atualizar.ico"), size=(36, 36))
 icone_sobre        = ctk.CTkImage(light_image=Image.open("recursos/sobre-nos.ico"), size=(36, 36))
-icone_conectar     = ctk.CTkImage(light_image=Image.open("recursos/link.ico"), size=(36, 36))
+icone_conectar     = ctk.CTkImage(light_image=Image.open("recursos/link.ico"), size=(28, 28))
 icone_ver_backup   = ctk.CTkImage(light_image=Image.open("recursos/restaurar-backup.ico"), size=(36, 36))
 icone_localizar    = ctk.CTkImage(light_image=Image.open("recursos/lupa.ico"), size=(24, 24))
 icone_salvar       = ctk.CTkImage(light_image=Image.open("recursos/salvar.ico"), size=(24, 24))
@@ -44,9 +56,11 @@ icone_desfazer     = ctk.CTkImage(light_image=Image.open("recursos/desfazer.ico"
 icone_refazer      = ctk.CTkImage(light_image=Image.open("recursos/refazer.ico"), size=(24, 24))
 icone_copiar       = ctk.CTkImage(light_image=Image.open("recursos/copiar.ico"), size=(24, 24))
 icone_colar        = ctk.CTkImage(light_image=Image.open("recursos/colar.ico"), size=(24, 24))
+icone_aumentar_t   = ctk.CTkImage(light_image=Image.open("recursos/aumentar_texto.ico"), size=(24, 24))
+icone_diminuir_t   = ctk.CTkImage(light_image=Image.open("recursos/diminuir_texto.ico"), size=(24, 24))
 
 # === Menu lateral ===
-menu_lateral = ctk.CTkFrame(root, width=160, corner_radius=0)
+menu_lateral = CTkFrame(root, width=160, corner_radius=0)
 menu_lateral.pack(side="left", fill="y")
 
 btn_base = CTkButton(menu_lateral, text="", image=icone_base, width=48, height=48,
@@ -73,15 +87,8 @@ btn_sobre = CTkButton(menu_lateral, text="", image=icone_sobre, width=48, height
 btn_sobre.pack(pady=8)
 Tooltip(btn_sobre, "Sobre o Sistema")
 
-# === Configurações iniciais ===
-status_var = ctk.StringVar()
-root.iconbitmap("recursos/xmleditor.ico")
-root.title(f"XMLEditor RM – Editor de XML eSocial v{versao}")
-root.state("zoomed")
-root.after(100, lambda: root.state("zoomed"))
-root.minsize(width=1350, height=740)
-
 # === Frame superior ===
+status_var = ctk.StringVar()
 frame1 = CTkFrame(root)
 frame1.pack(pady=10, anchor="w", fill="x", padx=10)
 
@@ -147,20 +154,29 @@ btn_colar = CTkButton(frame_toolbar, text="", image=icone_colar, width=38, heigh
 btn_colar.pack(side="left", padx=5)
 Tooltip(btn_colar, "Colar conteúdo (Ctrl+V)")
 
-
-# === Botão de Desfazer === 
-btn_desfazer = ctk.CTkButton(frame_toolbar, text="", image=icone_desfazer, width=38, height=38,
-                             fg_color="transparent", hover_color="#e0e0e0",
-                             command=lambda: desfazer(text_xml))
+btn_desfazer = CTkButton(frame_toolbar, text="", image=icone_desfazer, width=38, height=38,
+                         fg_color="transparent", hover_color="#e0e0e0",
+                         command=lambda: desfazer(text_xml))
 btn_desfazer.pack(side="left", padx=5)
 Tooltip(btn_desfazer, "Desfazer (Ctrl+Z)")
 
-# === Botão de Refazer ===
-btn_refazer = ctk.CTkButton(frame_toolbar, text="", image=icone_refazer, width=38, height=38,
-                            fg_color="transparent", hover_color="#e0e0e0",
-                            command=lambda: refazer(text_xml))
+btn_refazer = CTkButton(frame_toolbar, text="", image=icone_refazer, width=38, height=38,
+                        fg_color="transparent", hover_color="#e0e0e0",
+                        command=lambda: refazer(text_xml))
 btn_refazer.pack(side="left", padx=5)
 Tooltip(btn_refazer, "Refazer (Ctrl+Y)")
+
+btn_aumentar = CTkButton(frame_toolbar, text="", image=icone_aumentar_t, width=38, height=38,
+                         fg_color="transparent", hover_color="#e0e0e0",
+                         command=lambda: ajustar_fonte(1))
+btn_aumentar.pack(side="left", padx=5)
+Tooltip(btn_aumentar, "Aumentar Fonte")
+
+btn_diminuir = CTkButton(frame_toolbar, text="",image=icone_diminuir_t, width=38, height=38,
+                         fg_color="transparent", hover_color="#e0e0e0",
+                         command=lambda: ajustar_fonte(-1))
+btn_diminuir.pack(side="left", padx=5)
+Tooltip(btn_diminuir, "Diminuir Fonte")
 
 
 # === Editor XML com numeração ===
@@ -172,6 +188,11 @@ CTkLabel(root, textvariable=status_var, text_color="skyblue").pack(pady=5)
 # === Inicialização final ===
 ctk.set_appearance_mode("dark")
 ctk.set_default_color_theme("blue")
+
 configurar_atalhos(root, text_xml, status_var, base_selecionada_dict, entry_id, botao_salvar)
 
+# === Aplicar marcador na inicialização (ou após carregamento)
+destacar_linhas_editadas(text_xml, [1])
+
+# === Loop principal ===
 root.mainloop()

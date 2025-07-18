@@ -29,8 +29,8 @@ def criar_editor_com_linhas(pai, fonte=("Consolas", 12), bg="#1e1e1e", fg="white
     # Tag para destacar a linha atual
     text_xml.tag_configure("linha_atual", background="#2e2e2e")
 
+    # Atualiza a numeração lateral
     def atualizar_linhas(event=None):
-        # Atualiza a numeração lateral
         linha_numero.config(state="normal")
         linha_numero.delete("1.0", "end")
         try:
@@ -40,25 +40,40 @@ def criar_editor_com_linhas(pai, fonte=("Consolas", 12), bg="#1e1e1e", fg="white
         linhas = "\n".join(str(i) for i in range(1, total + 1))
         linha_numero.insert("1.0", linhas)
         linha_numero.config(state="disabled")
-
-        # Mantém visual sincronizado com conteúdo
         linha_numero.yview_moveto(text_xml.yview()[0])
 
+    # Realça a linha atual do cursor
     def realcar_linha_atual(event=None):
-        # Remove destaque anterior
         text_xml.tag_remove("linha_atual", "1.0", "end")
-
-        # Aplica destaque à linha atual
         linha = text_xml.index("insert").split(".")[0]
         inicio = f"{linha}.0"
         fim = f"{linha}.end"
         text_xml.tag_add("linha_atual", inicio, fim)
 
-    # Eventos que disparam as atualizações
+    # Dispara as atualizações visuais
+    def disparar_atualizacao(event=None):
+        atualizar_linhas()
+        realcar_linha_atual()
+
+    # Escuta eventos manuais
     eventos = ["<KeyRelease>", "<ButtonRelease-1>", "<MouseWheel>", "<Configure>"]
     for evento in eventos:
-        text_xml.bind(evento, lambda e: [atualizar_linhas(), realcar_linha_atual()])
+        text_xml.bind(evento, disparar_atualizacao)
 
+    # Escuta modificações programáticas (como ao carregar XML)
+    text_xml.bind("<<Modified>>", disparar_atualizacao)
+
+    # Monitoramento contínuo (reforço)
+    def monitorar_modificacao():
+        if text_xml.edit_modified():
+            disparar_atualizacao()
+            text_xml.edit_modified(False)
+        text_xml.after(100, monitorar_modificacao)
+
+    monitorar_modificacao()
+
+    # Inicializa visuais
     atualizar_linhas()
     realcar_linha_atual()
+
     return text_xml

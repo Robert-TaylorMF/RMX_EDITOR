@@ -5,20 +5,20 @@ import os
 import re
 from datetime import datetime
 import xml.dom.minidom
-import pyperclip
 
-# 📋 Copia o texto selecionado do editor
+# 📋 Copiar texto selecionado do editor
 def copiar_texto(text_widget):
     try:
         texto = text_widget.get("sel.first", "sel.last")
-        pyperclip.copy(texto)
+        text_widget.clipboard_clear()
+        text_widget.clipboard_append(texto)
     except tk.TclError:
         pass  # nada selecionado
 
-# 📥 Cola o conteúdo do clipboard na posição atual
+# 📥 Colar conteúdo do clipboard na posição atual do cursor
 def colar_texto(text_widget):
     try:
-        texto = pyperclip.paste()
+        texto = text_widget.clipboard_get()
         text_widget.insert("insert", texto)
     except Exception:
         pass
@@ -223,6 +223,19 @@ def extrair_conteudo_esocial(xml_str):
     if inicio != -1:
         return xml_str[inicio:]
     return xml_str  # caso não encontre, retorna como está
+
+def atualizar_fonte_em_editor(text_widget, nova_fonte):
+    """
+    Aplica a nova fonte no editor principal e na régua de linhas.
+    """
+    try:
+        text_widget.config(font=nova_fonte)
+        for child in text_widget.master.children.values():
+            if isinstance(child, tk.Text) and child["state"] == "disabled":
+                child.config(font=nova_fonte)
+    except Exception:
+        pass
+
 
 
 
