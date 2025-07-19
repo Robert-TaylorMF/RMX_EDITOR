@@ -1,5 +1,5 @@
 import customtkinter as ctk
-from customtkinter import CTkImage
+from customtkinter import CTkImage, CTk, CTkLabel, CTkButton, CTkEntry, CTkTextbox, CTkComboBox, CTkFrame
 from PIL import Image
 from modulos.editor_com_linhas import criar_editor_com_linhas
 from utilitarios import realcar_sintaxe_xml
