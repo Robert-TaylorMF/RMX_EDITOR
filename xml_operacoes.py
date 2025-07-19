@@ -2,6 +2,7 @@ import tkinter as tk
 from tkinter import messagebox
 from conexao import obter_conexao
 from utilitarios import formatar_xml, salvar_backup, realcar_sintaxe_xml
+import re
 
 def carregar_xml(base_selecionada, evento_id, editor_frame, status_var, painel_guias=None, nome_guia=None):
     if not base_selecionada:
@@ -99,3 +100,6 @@ def salvar_xml_por_guia(painel_guias, nome_guia):
         return
 
     salvar_xml(base, evento_id, novo_xml, text_widget)
+
+def dividir_por_tags(xml_str):
+    return re.findall(r"<[^>]+>[^<]*</[^>]+>", formatar_xml(xml_str))

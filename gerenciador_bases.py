@@ -5,6 +5,7 @@ from configuracao import carregar_bases, salvar_nova_base, excluir_base
 from seguranca import criptografar_senha
 from tooltip import Tooltip
 
+# === Importação dos Icones ===
 icone_adicionar = ctk.CTkImage(light_image=Image.open("recursos/adicionar_banco.ico"), size=(32, 32))
 icone_editar    = ctk.CTkImage(light_image=Image.open("recursos/editar_banco.ico"), size=(32, 32))
 icone_remover   = ctk.CTkImage(light_image=Image.open("recursos/remover_banco.ico"), size=(32, 32))

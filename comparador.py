@@ -1,14 +1,18 @@
 import os
+import re
 import customtkinter as ctk
 import tkinter as tk
 from tkinter import messagebox
 from PIL import Image
 from utilitarios import realcar_sintaxe_xml, formatar_xml
 from modulos.regua_visual import destacar_linhas_editadas
-import re
+from tooltip import Tooltip
 from difflib import SequenceMatcher
+from tkinter import messagebox
 
+# === Importação dos Icones ===
 icone_lixeira = ctk.CTkImage(light_image=Image.open("recursos/lixeira.ico"), size=(20, 20))
+icone_restaurar = ctk.CTkImage(light_image=Image.open("recursos/restaurar.ico"), size=(38, 38))
 
 def dividir_por_tags(xml_str):
     return re.findall(r"<[^>]+>[^<]*</[^>]+>", formatar_xml(xml_str))
@@ -84,89 +88,121 @@ def abrir_backup(root, painel_guias, nome_guia, status_var):
         caminho = os.path.join(pasta, nome_arquivo)
         with open(caminho, "r", encoding="utf-8") as f:
             raw_backup = f.read()
-
+    
         text_widget = editor_frame.editor_texto if hasattr(editor_frame, "editor_texto") else editor_frame
         raw_atual = text_widget.get("1.0", "end")
-
-        tags_backup = dividir_por_tags(raw_backup)
-        tags_atual = dividir_por_tags(raw_atual)
-
+    
+        xml_backup = formatar_xml(raw_backup)
+        xml_atual = formatar_xml(raw_atual)
+    
         comp = ctk.CTkToplevel(janela)
-        comp.title("Comparativo Visual Estilo WinMerge")
-        comp.geometry("1350x800")
+        comp.title("Comparativo XML")
+        comp.geometry("1600x900")
         comp.transient(janela)
         comp.grab_set()
         comp.focus_force()
         comp.lift()
-
+    
         legenda = ctk.CTkFrame(comp)
         legenda.pack(pady=5)
         ctk.CTkLabel(legenda, text="🟩 Adicionado", fg_color="#eaffea", text_color="#0a7300", corner_radius=4).grid(row=0, column=0, padx=5)
         ctk.CTkLabel(legenda, text="🟥 Removido", fg_color="#ffeaea", text_color="#a00000", corner_radius=4).grid(row=0, column=1, padx=5)
         ctk.CTkLabel(legenda, text="🟨 Modificado", fg_color="#fff7c0", text_color="#c27c00", corner_radius=4).grid(row=0, column=2, padx=5)
-
+    
         titulo = ctk.CTkFrame(comp)
         titulo.pack(pady=(5, 0))
         ctk.CTkLabel(titulo, text="📂 XML Atual (Editor)", text_color="skyblue", font=("Segoe UI", 14, "bold")).grid(row=0, column=0, padx=50)
         ctk.CTkLabel(titulo, text=f"📦 Backup Selecionado: {nome_arquivo}", text_color="lightgreen", font=("Segoe UI", 14, "bold")).grid(row=0, column=1, padx=50)
+    
+        frame_comparativo = ctk.CTkFrame(comp)
+        frame_comparativo.pack(expand=True, fill="both", padx=10, pady=10)
 
-        frame = ctk.CTkFrame(comp)
-        frame.pack(expand=True, fill="both", padx=10, pady=10)
+    
+        def criar_editor_com_linhas(container):
+            frame = tk.Frame(container)
+            frame.pack(side="left", expand=True, fill="both", padx=10)
 
-        txt_atual = tk.Text(frame, wrap="word", font=("Consolas", 12), bg="#1e1e1e", fg="white", insertbackground="white")
-        txt_backup = tk.Text(frame, wrap="word", font=("Consolas", 12), bg="#1e1e1e", fg="white", insertbackground="white")
+            canvas_linhas = tk.Canvas(frame, width=40, bg="#2b2b2b", highlightthickness=0)
+            canvas_linhas.pack(side="left", fill="y")
 
-        txt_atual.grid(row=0, column=0, padx=(5, 3), sticky="nsew")
-        txt_backup.grid(row=0, column=1, padx=(3, 5), sticky="nsew")
-        frame.grid_rowconfigure(0, weight=1)
-        frame.grid_columnconfigure(0, weight=1)
-        frame.grid_columnconfigure(1, weight=1)
-        
-        matcher = SequenceMatcher(None, tags_backup, tags_atual)
-        linha_atual = linha_backup = 1
+            text_area = tk.Text(frame, wrap="none", font=("Consolas", 11), bg="#1e1e1e", fg="white",
+                                insertbackground="white", padx=5, pady=5, undo=True)
+            text_area.pack(side="left", expand=True, fill="both")
 
-        for op, i1, i2, j1, j2 in matcher.get_opcodes():
-            for k in range(max(i2 - i1, j2 - j1)):
-                tag_b = tags_backup[i1 + k] if i1 + k < i2 else ""
-                tag_a = tags_atual[j1 + k] if j1 + k < j2 else ""
+            # === Scrollbar da area de comparação ===
+            scroll_y = ctk.CTkScrollbar(frame, orientation="vertical", command=text_area.yview)
+            scroll_y.pack(side="right", fill="y")
+            text_area.configure(yscrollcommand=scroll_y.set)
+            canvas_linhas.configure(yscrollcommand=scroll_y.set)
 
-                txt_backup.insert("end", tag_b + "\n" if tag_b else "\n")
-                txt_atual.insert("end", tag_a + "\n" if tag_a else "\n")
+            # Estilo de seleção visível
+            text_area.configure(selectbackground="#3399ff", selectforeground="white")
 
-                idx_b = f"{linha_backup}.0"
-                idx_fb = f"{linha_backup}.end"
-                idx_a = f"{linha_atual}.0"
-                idx_fa = f"{linha_atual}.end"
+            def sincronizar_scroll(*args):
+                text_area.yview(*args)
+                canvas_linhas.yview(*args)
 
-                if op == "replace":
-                    txt_backup.tag_add("modificado", idx_b, idx_fb)
-                    txt_atual.tag_add("modificado", idx_a, idx_fa)
-                elif op == "delete":
-                    txt_backup.tag_add("remocao", idx_b, idx_fb)
-                elif op == "insert":
-                    txt_atual.tag_add("adicao", idx_a, idx_fa)
+            def atualizar_linhas():
+                canvas_linhas.delete("all")
+                i = text_area.index("@0,0")
+                while True:
+                    dline = text_area.dlineinfo(i)
+                    if dline is None:
+                        break
+                    y = dline[1]
+                    linha_num = str(i).split(".")[0]
+                    canvas_linhas.create_text(35, y, anchor="ne", text=linha_num, fill="#aaaaaa", font=("Consolas", 10))
+                    i = text_area.index(f"{i}+1line")
 
-                linha_backup += 1
-                linha_atual += 1
+            text_area.bind("<KeyRelease>", lambda e: atualizar_linhas())
+            text_area.bind("<MouseWheel>", lambda e: atualizar_linhas())
+            text_area.bind("<ButtonRelease-1>", lambda e: atualizar_linhas())
+            text_area.after(100, atualizar_linhas)
 
-        for txt in [txt_atual, txt_backup]:
-            txt.tag_config("modificado", foreground="#000000", background="#fff7c0")
-            txt.tag_config("adicao", foreground="#000000", background="#eaffea")
-            txt.tag_config("remocao", foreground="#000000", background="#ffeaea")
-            txt.config(state="disabled")
+            return text_area
 
+        txt_atual = criar_editor_com_linhas(frame_comparativo)
+        txt_backup = criar_editor_com_linhas(frame_comparativo)  
+        txt_atual.insert("1.0", xml_atual)
+        txt_backup.insert("1.0", xml_backup)
+
+        # Aplicar tags visuais
+        txt_atual.tag_config("modificado", background="#fff7c0", foreground="#111111")
+        txt_backup.tag_config("modificado", background="#fff7c0", foreground="#111111")
+
+        txt_atual.tag_config("adicao", background="#eaffea", foreground="#0a7300")
+        txt_backup.tag_config("remocao", background="#ffeaea", foreground="#a00000")
+
+        # Comparar tags
+        tags_b = dividir_por_tags(xml_backup)
+        tags_a = dividir_por_tags(xml_atual)
+        matcher = SequenceMatcher(None, tags_b, tags_a)
+        for opcode, i1, i2, j1, j2 in matcher.get_opcodes():
+            if opcode == "equal":
+                continue
+            elif opcode == "replace":
+                for idx in range(i1, i2):
+                    txt_backup.tag_add("modificado", f"{idx+1}.0", f"{idx+1}.end")
+                for idx in range(j1, j2):
+                    txt_atual.tag_add("modificado", f"{idx+1}.0", f"{idx+1}.end")
+            elif opcode == "delete":
+                for idx in range(i1, i2):
+                    txt_backup.tag_add("remocao", f"{idx+1}.0", f"{idx+1}.end")
+            elif opcode == "insert":
+                for idx in range(j1, j2):
+                    txt_atual.tag_add("adicao", f"{idx+1}.0", f"{idx+1}.end")
+
+        # Botão restaurar
         def restaurar_backup():
-            if messagebox.askyesno(
-                "Restaurar Backup",
-                "Deseja carregar este backup no editor?\n(É necessário clicar em SALVAR depois para aplicar no banco)"
-            ):
+            if messagebox.askyesno("Restaurar Backup", "Deseja carregar este backup no editor?\n(É necessário clicar em SALVAR depois para aplicar no banco)"):
                 text_widget.delete("1.0", "end")
-                text_widget.insert("end", raw_backup)
+                text_widget.insert("end", xml_backup)
                 realcar_sintaxe_xml(text_widget)
                 status_var.set(f"✅ Backup restaurado: {nome_arquivo}")
 
+                # Marcar linhas modificadas
                 linhas_modificadas = []
-                backup_linhas = raw_backup.strip().splitlines()
+                backup_linhas = xml_backup.strip().splitlines()
                 atual_linhas = text_widget.get("1.0", "end").strip().splitlines()
 
                 for i, (linha_b, linha_a) in enumerate(zip(backup_linhas, atual_linhas), start=1):
@@ -174,5 +210,32 @@ def abrir_backup(root, painel_guias, nome_guia, status_var):
                         linhas_modificadas.append(i)
 
                 destacar_linhas_editadas(text_widget, linhas_modificadas)
+        
+        # === Realçar XML ===
+        realcar_sintaxe_xml(txt_atual)
+        realcar_sintaxe_xml(txt_backup)
+        
+        # Frame para centralizar o botão
+        frame_btn_central = ctk.CTkFrame(comp, fg_color="transparent")
+        frame_btn_central.pack(pady=10)
 
-        ctk.CTkButton(comp, text="⏪ Restaurar este backup", command=restaurar_backup).pack(pady=10)
+        # Botão restaurar com espaço garantido e texto invisível
+        btn_restaurar = ctk.CTkButton(
+            frame_btn_central,
+            text="Restaurar XML",
+            font=("Segoe UI", 10, "normal"),
+            anchor="center",
+            image=icone_restaurar,
+            width=48,
+            height=48,
+            fg_color="transparent",
+            command=restaurar_backup,
+            compound="top"
+        )
+        btn_restaurar.pack(pady=5)
+
+        # Efeito de hover (se sua função estiver definida)
+        efeito_hover(btn_restaurar, "#d1e4ff")
+
+        # Tooltip com delay para garantir ativação
+        comp.after(300, lambda: Tooltip(btn_restaurar, "Restaurar XML"))
