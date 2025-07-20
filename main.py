@@ -1,6 +1,5 @@
 # === Importações ===
 import tkinter as tk
-import pyperclip
 import customtkinter as ctk
 from customtkinter import CTk, CTkLabel, CTkButton, CTkEntry, CTkTextbox, CTkComboBox, CTkFrame
 from PIL import Image
@@ -10,19 +9,15 @@ from sobre import mostrar_sobre
 from verificador import verificar_atualizacao
 from configuracao import carregar_bases, obter_base_selecionada
 from gerenciador_bases import abrir_gerenciador_de_bases
-from xml_operacoes import carregar_xml, salvar_xml, salvar_xml_por_guia
+from xml_operacoes import carregar_xml, salvar_xml_por_guia
 from comparador import abrir_backup
 from atalhos import configurar_atalhos, desfazer, refazer
-from modulos.editor_com_linhas import criar_editor_com_linhas
 from modulos.painel_de_guias import PainelDeGuias
-from modulos.seletor_impressora import abrir_janela_impressao
-from modulos.regua_visual import destacar_ocorrencias, destacar_linhas_erro, destacar_linhas_editadas
+from modulos.editor_eventos import abrir_seletor_eventos
 from utilitarios import (
-    formatar_xml, salvar_backup, realcar_sintaxe_xml,
-    compactar_xml, extrair_conteudo_esocial, abrir_localizador,
-    copiar_texto, colar_texto, atualizar_fonte_em_editor,
-    aumentar_fonte, diminuir_fonte, exportar_xml, imprimir_xml,
-    gerar_e_abrir_pdf_xml
+    abrir_localizador, copiar_texto, colar_texto, 
+    atualizar_fonte_em_editor, aumentar_fonte, diminuir_fonte, 
+    exportar_xml, gerar_e_abrir_pdf_xml
 )
 
 # === Variáveis Globais ===
@@ -52,6 +47,7 @@ root.minsize(width=1350, height=740)
 
 # === Ícones ===
 icone_base         = ctk.CTkImage(light_image=Image.open("recursos/bancos-de-dados.ico"), size=(36, 36))
+icone_esocial      = ctk.CTkImage(light_image=Image.open("recursos/esocial.ico"), size=(36, 36))
 icone_att          = ctk.CTkImage(light_image=Image.open("recursos/atualizar.ico"), size=(36, 36))
 icone_sobre        = ctk.CTkImage(light_image=Image.open("recursos/sobre-nos.ico"), size=(36, 36))
 icone_conectar     = ctk.CTkImage(light_image=Image.open("recursos/link.ico"), size=(28, 28))
@@ -76,6 +72,13 @@ btn_base = CTkButton(menu_lateral, text="", image=icone_base, width=48, height=4
                      command=lambda: abrir_gerenciador_de_bases(root, combo_base, status_var))
 btn_base.pack(pady=(10, 8))
 Tooltip(btn_base, "Gerenciar Bases")
+
+btn_base = CTkButton(menu_lateral, text="", image=icone_esocial, width=48, height=48,
+                     fg_color="transparent", hover_color="#e0e0e0",
+                     command=lambda: abrir_seletor_eventos(base_selecionada_dict)
+                    )
+btn_base.pack(pady=(10, 8))
+Tooltip(btn_base, "Abrir Base de Eventos do eSocial")
 
 btn_backup = CTkButton(menu_lateral, text="", image=icone_ver_backup, width=48, height=48,
                        fg_color="transparent", hover_color="#e0e0e0",
