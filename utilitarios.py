@@ -10,6 +10,12 @@ import re
 from datetime import datetime
 import xml.dom.minidom
 
+# Caminho da pasta recurso
+def caminho_recurso(nome_arquivo):
+    import sys, os
+    base = getattr(sys, '_MEIPASS', os.path.dirname(os.path.abspath(__file__)))
+    return os.path.join(base, "recursos", nome_arquivo)
+
 # 📋 Copiar texto selecionado do editor
 def copiar_texto(editor_frame):
     text_widget = editor_frame.editor_texto if hasattr(editor_frame, "editor_texto") else editor_frame

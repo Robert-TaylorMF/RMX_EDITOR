@@ -1,5 +1,6 @@
 # === Importações ===
 import tkinter as tk
+import sys, os
 import pyperclip
 import customtkinter as ctk
 from customtkinter import CTk, CTkLabel, CTkButton, CTkEntry, CTkTextbox, CTkComboBox, CTkFrame
@@ -25,6 +26,13 @@ from utilitarios import (
     gerar_e_abrir_pdf_xml
 )
 
+# === Importação do Icone Principal do Sistema ===
+def caminho_recurso(nome_arquivo):
+    base = getattr(sys, '_MEIPASS', os.path.dirname(os.path.abspath(__file__)))
+    return os.path.join(base, "recursos", nome_arquivo)
+
+icone_principal = caminho_recurso("xmleditor.ico")
+
 # === Variáveis Globais ===
 bases_disponiveis = carregar_bases()
 base_selecionada_dict = None
@@ -44,28 +52,29 @@ mostrar_splash()
 
 # === Janela principal ===
 root = CTk()
-root.iconbitmap("recursos/xmleditor.ico")
+root.iconbitmap(icone_principal)
 root.title(f"XMLEditor RM – Editor de XML eSocial v{versao}")
 root.state("zoomed")
 root.after(100, lambda: root.state("zoomed"))
 root.minsize(width=1350, height=740)
 
 # === Ícones ===
-icone_base         = ctk.CTkImage(light_image=Image.open("recursos/bancos-de-dados.ico"), size=(36, 36))
-icone_att          = ctk.CTkImage(light_image=Image.open("recursos/atualizar.ico"), size=(36, 36))
-icone_sobre        = ctk.CTkImage(light_image=Image.open("recursos/sobre-nos.ico"), size=(36, 36))
-icone_conectar     = ctk.CTkImage(light_image=Image.open("recursos/link.ico"), size=(28, 28))
-icone_ver_backup   = ctk.CTkImage(light_image=Image.open("recursos/restaurar-backup.ico"), size=(36, 36))
-icone_localizar    = ctk.CTkImage(light_image=Image.open("recursos/lupa.ico"), size=(24, 24))
-icone_salvar       = ctk.CTkImage(light_image=Image.open("recursos/salvar.ico"), size=(24, 24))
-icone_desfazer     = ctk.CTkImage(light_image=Image.open("recursos/desfazer.ico"), size=(24, 24))
-icone_refazer      = ctk.CTkImage(light_image=Image.open("recursos/refazer.ico"), size=(24, 24))
-icone_copiar       = ctk.CTkImage(light_image=Image.open("recursos/copiar.ico"), size=(24, 24))
-icone_colar        = ctk.CTkImage(light_image=Image.open("recursos/colar.ico"), size=(24, 24))
-icone_aumentar_t   = ctk.CTkImage(light_image=Image.open("recursos/aumentar_texto.ico"), size=(24, 24))
-icone_diminuir_t   = ctk.CTkImage(light_image=Image.open("recursos/diminuir_texto.ico"), size=(24, 24))
-icone_exportar     = ctk.CTkImage(light_image=Image.open("recursos/exportar.ico"), size=(24, 24))
-icone_imprimir     = ctk.CTkImage(light_image=Image.open("recursos/imprimir.ico"), size=(24, 24))
+icone_base = ctk.CTkImage(light_image=Image.open(caminho_recurso("bancos-de-dados.ico")), size=(36, 36))
+icone_att = ctk.CTkImage(light_image=Image.open(caminho_recurso("atualizar.ico")), size=(36, 36))
+icone_sobre = ctk.CTkImage(light_image=Image.open(caminho_recurso("sobre-nos.ico")), size=(36, 36))
+icone_conectar = ctk.CTkImage(light_image=Image.open(caminho_recurso("link.ico")), size=(28, 28))
+icone_ver_backup = ctk.CTkImage(light_image=Image.open(caminho_recurso("restaurar-backup.ico")), size=(36, 36))
+icone_localizar = ctk.CTkImage(light_image=Image.open(caminho_recurso("lupa.ico")), size=(24, 24))
+icone_salvar = ctk.CTkImage(light_image=Image.open(caminho_recurso("salvar.ico")), size=(24, 24))
+icone_desfazer = ctk.CTkImage(light_image=Image.open(caminho_recurso("desfazer.ico")), size=(24, 24))
+icone_refazer = ctk.CTkImage(light_image=Image.open(caminho_recurso("refazer.ico")), size=(24, 24))
+icone_copiar = ctk.CTkImage(light_image=Image.open(caminho_recurso("copiar.ico")), size=(24, 24))
+icone_colar = ctk.CTkImage(light_image=Image.open(caminho_recurso("colar.ico")), size=(24, 24))
+icone_aumentar_t = ctk.CTkImage(light_image=Image.open(caminho_recurso("aumentar_texto.ico")), size=(24, 24))
+icone_diminuir_t = ctk.CTkImage(light_image=Image.open(caminho_recurso("diminuir_texto.ico")), size=(24, 24))
+icone_exportar = ctk.CTkImage(light_image=Image.open(caminho_recurso("exportar.ico")), size=(24, 24))
+icone_imprimir = ctk.CTkImage(light_image=Image.open(caminho_recurso("imprimir.ico")), size=(24, 24))
+
 
 # === Menu lateral ===
 menu_lateral = CTkFrame(root, width=160, corner_radius=0)

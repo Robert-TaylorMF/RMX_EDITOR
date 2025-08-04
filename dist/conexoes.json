@@ -1,0 +1,11 @@
+{
+  "bases": [
+    {
+      "nome": "CorporeRM Produção",
+      "host": "129.200.19.30",
+      "usuario": "sa",
+      "senha": "gAAAAABokRHgzBlsnxf3tvajRzUia_PphhkP_t4MyFTk2EnEcWo6BHUEjeCiaIBnawV1C9c-4kp5chwdji0gaBywCf3QMIxTrA==",
+      "database": "CorporeRM"
+    }
+  ]
+}

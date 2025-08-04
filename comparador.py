@@ -1,5 +1,6 @@
 import os
 import re
+import sys
 import customtkinter as ctk
 import tkinter as tk
 from tkinter import messagebox
@@ -8,11 +9,16 @@ from utilitarios import realcar_sintaxe_xml, formatar_xml
 from modulos.regua_visual import destacar_linhas_editadas
 from tooltip import Tooltip
 from difflib import SequenceMatcher
-from tkinter import messagebox
 
-# === Importação dos Icones ===
-icone_lixeira = ctk.CTkImage(light_image=Image.open("recursos/lixeira.ico"), size=(20, 20))
-icone_restaurar = ctk.CTkImage(light_image=Image.open("recursos/restaurar.ico"), size=(38, 38))
+# === Função para localizar recursos ===
+def carregar_icone(nome_arquivo, tamanho=(32, 32)):
+    base_path = getattr(sys, '_MEIPASS', os.path.dirname(os.path.abspath(__file__)))
+    caminho_completo = os.path.join(base_path, "recursos", nome_arquivo)
+    return ctk.CTkImage(light_image=Image.open(caminho_completo), size=tamanho)
+
+# === Importação dos Ícones ===
+icone_lixeira   = carregar_icone("lixeira.ico", tamanho=(20, 20))
+icone_restaurar = carregar_icone("restaurar.ico", tamanho=(38, 38))
 
 def dividir_por_tags(xml_str):
     return re.findall(r"<[^>]+>[^<]*</[^>]+>", formatar_xml(xml_str))

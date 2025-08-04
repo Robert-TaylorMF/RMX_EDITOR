@@ -1,3 +1,4 @@
+import os, sys
 import customtkinter as ctk
 from PIL import Image
 from tkinter import messagebox
@@ -5,10 +6,16 @@ from configuracao import carregar_bases, salvar_nova_base, excluir_base
 from seguranca import criptografar_senha
 from tooltip import Tooltip
 
-# === Importação dos Icones ===
-icone_adicionar = ctk.CTkImage(light_image=Image.open("recursos/adicionar_banco.ico"), size=(32, 32))
-icone_editar    = ctk.CTkImage(light_image=Image.open("recursos/editar_banco.ico"), size=(32, 32))
-icone_remover   = ctk.CTkImage(light_image=Image.open("recursos/remover_banco.ico"), size=(32, 32))
+# === Função para localizar recursos ===
+def carregar_icone(nome_arquivo, tamanho=(32, 32)):
+    base_path = getattr(sys, '_MEIPASS', os.path.dirname(os.path.abspath(__file__)))
+    caminho_completo = os.path.join(base_path, "recursos", nome_arquivo)
+    return ctk.CTkImage(light_image=Image.open(caminho_completo), size=tamanho)
+
+# === Carregamento dos ícones ===
+icone_adicionar = carregar_icone("adicionar_banco.ico")
+icone_editar    = carregar_icone("editar_banco.ico")
+icone_remover   = carregar_icone("remover_banco.ico")
 
 def abrir_gerenciador_de_bases(root, combo=None, status=None):
     janela = ctk.CTkToplevel(root)

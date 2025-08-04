@@ -1,3 +1,4 @@
+from utilitarios import caminho_recurso
 import customtkinter as ctk
 from customtkinter import CTkImage, CTk, CTkLabel, CTkButton, CTkEntry, CTkTextbox, CTkComboBox, CTkFrame
 from PIL import Image
@@ -5,6 +6,7 @@ from modulos.editor_com_linhas import criar_editor_com_linhas
 from utilitarios import realcar_sintaxe_xml
 from tooltip import Tooltip
 import tkinter as tk  # necessário para manipular entry_id
+
 
 class PainelDeGuias(ctk.CTkFrame):
     def __init__(self, master, entry_id):
@@ -17,7 +19,7 @@ class PainelDeGuias(ctk.CTkFrame):
         self.top_bar = ctk.CTkFrame(self)
         self.top_bar.pack(fill="x", padx=10, pady=(10, 0))
 
-        icone_nova_guia = CTkImage(light_image=Image.open("recursos/mais.ico"), size=(24, 24))
+        icone_nova_guia = CTkImage(light_image=Image.open(caminho_recurso("mais.ico")), size=(24, 24))
 
         btn_nova = ctk.CTkButton(
             self.top_bar,
