@@ -28,7 +28,7 @@ from utilitarios import (
 # === Variáveis Globais ===
 bases_disponiveis = carregar_bases()
 base_selecionada_dict = None
-versao = "1.3"
+versao = "2.0"
 fonte_editor = ["Consolas", 12]
 contagem_janelas_xml = [0] 
 
