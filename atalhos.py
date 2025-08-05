@@ -1,7 +1,7 @@
 import tkinter as tk
 import customtkinter as ctk
 from comparador import abrir_backup
-from utilitarios import abrir_localizador
+from utilitarios import abrir_localizador_substituir
 
 # 🧠 Funções globais de edição
 def desfazer(editor_frame):
@@ -34,7 +34,7 @@ def configurar_atalhos(root, painel_guias, status_var, base_config, entry_id, bo
 
     root.bind_all("<Control-s>", lambda e: botao_salvar.invoke())
 
-    root.bind("<Control-f>", lambda e: abrir_localizador(obter_text_widget(), root))
+    root.bind("<Control-f>", lambda e: abrir_localizador_substituir(obter_text_widget(), root))
 
     root.bind_all("<Control-b>", lambda e: abrir_backup(root, painel_guias, painel_guias.obter_nome_guia_ativa(), status_var))
 

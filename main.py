@@ -20,7 +20,7 @@ from modulos.seletor_impressora import abrir_janela_impressao
 from modulos.regua_visual import destacar_ocorrencias, destacar_linhas_erro, destacar_linhas_editadas
 from utilitarios import (
     formatar_xml, salvar_backup, realcar_sintaxe_xml,
-    compactar_xml, extrair_conteudo_esocial, abrir_localizador,
+    compactar_xml, extrair_conteudo_esocial, abrir_localizador_substituir,
     copiar_texto, colar_texto, atualizar_fonte_em_editor,
     aumentar_fonte, diminuir_fonte, exportar_xml, imprimir_xml,
     gerar_e_abrir_pdf_xml
@@ -150,7 +150,7 @@ frame_toolbar.pack(pady=5, anchor="w", fill="x", padx=10)
 
 btn_lupa = CTkButton(frame_toolbar, text="", image=icone_localizar, width=48, height=48,
                      fg_color="transparent", hover_color="#e0e0e0",
-                     command=lambda: abrir_localizador(painel_guias.obter_editor_ativo(), root))
+                     command=lambda: abrir_localizador_substituir(painel_guias.obter_editor_ativo(), root))
 btn_lupa.pack(side="left", padx=5)
 Tooltip(btn_lupa, "Localizar e Substituir (Ctrl+F)")
 

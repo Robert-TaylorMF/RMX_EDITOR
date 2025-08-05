@@ -1,7 +1,7 @@
 import tkinter as tk
 from tkinter import messagebox
 from conexao import obter_conexao
-from utilitarios import formatar_xml, salvar_backup, realcar_sintaxe_xml
+from utilitarios import formatar_xml, salvar_backup, realcar_sintaxe_xml, compactar_xml, extrair_conteudo_esocial, preparar_xml_para_salvar
 import re
 
 def carregar_xml(base_selecionada, evento_id, editor_frame, status_var, painel_guias=None, nome_guia=None):
@@ -41,7 +41,7 @@ def carregar_xml(base_selecionada, evento_id, editor_frame, status_var, painel_g
             messagebox.showinfo("Não encontrado", f"Nenhum evento com ID {evento_id}.")
     except Exception as e:
         messagebox.showerror("Erro", f"Falha ao carregar XML: {e}")
-    
+
     text_widget.edit_modified(True)
     text_widget.event_generate("<<Modified>>")
 
@@ -66,9 +66,11 @@ def salvar_xml(base_selecionada, evento_id, novo_xml, text_widget):
             xml_antigo = row[0]
             salvar_backup(xml_antigo, evento_id)
 
+        xml_para_salvar = preparar_xml_para_salvar(novo_xml)
+
         cursor.execute(
             "UPDATE PESOCIALEVENTOS SET mensagem = ? WHERE id = ?",
-            novo_xml, evento_id
+            xml_para_salvar, evento_id
         )
         conn.commit()
         conn.close()
@@ -77,7 +79,7 @@ def salvar_xml(base_selecionada, evento_id, novo_xml, text_widget):
         realcar_sintaxe_xml(text_widget)
     except Exception as e:
         messagebox.showerror("Erro ao salvar", str(e))
-
+        
 def salvar_xml_por_guia(painel_guias, nome_guia):
     if nome_guia not in painel_guias.editores:
         messagebox.showwarning("Erro", f"A guia {nome_guia} não existe.")
