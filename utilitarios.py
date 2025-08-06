@@ -313,3 +313,7 @@ def abrir_localizador_substituir(text_widget, root):
     btn_tudo.pack(pady=5)
 
     janela.bind("<Return>", lambda e: buscar_ocorrencias())
+    
+def efeito_hover(botao, cor_hover):
+    botao.bind("<Enter>", lambda e: botao.configure(fg_color=cor_hover))
+    botao.bind("<Leave>", lambda e: botao.configure(fg_color="transparent"))
