@@ -9,6 +9,7 @@ from utilitarios import realcar_sintaxe_xml, formatar_xml
 from modulos.regua_visual import destacar_linhas_editadas
 from tooltip import Tooltip
 from difflib import SequenceMatcher
+from utilitarios import efeito_hover
 
 # === Função para localizar recursos ===
 def carregar_icone(nome_arquivo, tamanho=(32, 32)):
@@ -20,8 +21,56 @@ def carregar_icone(nome_arquivo, tamanho=(32, 32)):
 icone_lixeira   = carregar_icone("lixeira.ico", tamanho=(20, 20))
 icone_restaurar = carregar_icone("restaurar.ico", tamanho=(38, 38))
 
-def dividir_por_tags(xml_str):
-    return re.findall(r"<[^>]+>[^<]*</[^>]+>", formatar_xml(xml_str))
+# === NOVA LÓGICA DE COMPARAÇÃO ===
+
+def dividir_em_linhas(xml):
+    xml_formatado = formatar_xml(xml)
+    return [linha.strip() for linha in xml_formatado.splitlines() if linha.strip()]
+
+def comparar_linhas(xml_backup, xml_atual):
+    linhas_backup = dividir_em_linhas(xml_backup)
+    linhas_atual  = dividir_em_linhas(xml_atual)
+    resultado = []
+
+    matcher = SequenceMatcher(None, linhas_backup, linhas_atual)
+    for tag, i1, i2, j1, j2 in matcher.get_opcodes():
+        resultado.append((tag, i1, i2, j1, j2))
+    return resultado
+
+def aplicar_comparacao(txt_backup, txt_atual, xml_backup, xml_atual):
+    # Preparar os textos
+    txt_atual.delete("1.0", "end")
+    txt_backup.delete("1.0", "end")
+    linhas_backup = dividir_em_linhas(xml_backup)
+    linhas_atual  = dividir_em_linhas(xml_atual)
+
+    for linha in linhas_backup:
+        txt_backup.insert("end", linha + "\n")
+    for linha in linhas_atual:
+        txt_atual.insert("end", linha + "\n")
+
+    # Aplicar tags visuais
+    txt_atual.tag_config("modificado", background="#fff7c0", foreground="#111111")
+    txt_backup.tag_config("modificado", background="#fff7c0", foreground="#111111")
+    txt_atual.tag_config("adicao", background="#eaffea", foreground="#0a7300")
+    txt_backup.tag_config("remocao", background="#ffeaea", foreground="#a00000")
+
+    # Comparar
+    opcodes = comparar_linhas(xml_backup, xml_atual)
+    for tag, i1, i2, j1, j2 in opcodes:
+        if tag == "equal":
+            continue
+        elif tag == "replace":
+            for i in range(i1, i2):
+                txt_backup.tag_add("modificado", f"{i+1}.0", f"{i+1}.end")
+            for j in range(j1, j2):
+                txt_atual.tag_add("modificado", f"{j+1}.0", f"{j+1}.end")
+        elif tag == "delete":
+            for i in range(i1, i2):
+                txt_backup.tag_add("remocao", f"{i+1}.0", f"{i+1}.end")
+        elif tag == "insert":
+            for j in range(j1, j2):
+                txt_atual.tag_add("adicao", f"{j+1}.0", f"{j+1}.end")
 
 def abrir_backup(root, painel_guias, nome_guia, status_var):
     import time
@@ -180,8 +229,8 @@ def abrir_backup(root, painel_guias, nome_guia, status_var):
         txt_backup.tag_config("remocao", background="#ffeaea", foreground="#a00000")
 
         # Comparar tags
-        tags_b = dividir_por_tags(xml_backup)
-        tags_a = dividir_por_tags(xml_atual)
+        tags_b = dividir_em_linhas(xml_backup)
+        tags_a = dividir_em_linhas(xml_atual)
         matcher = SequenceMatcher(None, tags_b, tags_a)
         for opcode, i1, i2, j1, j2 in matcher.get_opcodes():
             if opcode == "equal":
@@ -216,6 +265,8 @@ def abrir_backup(root, painel_guias, nome_guia, status_var):
                         linhas_modificadas.append(i)
 
                 destacar_linhas_editadas(text_widget, linhas_modificadas)
+                
+        comp.bind("<Control-r>", lambda e: restaurar_backup())
         
         # === Realçar XML ===
         realcar_sintaxe_xml(txt_atual)
@@ -245,3 +296,4 @@ def abrir_backup(root, painel_guias, nome_guia, status_var):
 
         # Tooltip com delay para garantir ativação
         comp.after(300, lambda: Tooltip(btn_restaurar, "Restaurar XML"))
+        

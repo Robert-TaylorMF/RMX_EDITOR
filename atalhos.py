@@ -33,16 +33,12 @@ def configurar_atalhos(root, painel_guias, status_var, base_config, entry_id, bo
         return None
 
     root.bind_all("<Control-s>", lambda e: botao_salvar.invoke())
-
     root.bind("<Control-f>", lambda e: abrir_localizador_substituir(obter_text_widget(), root))
-
     root.bind_all("<Control-b>", lambda e: abrir_backup(root, painel_guias, painel_guias.obter_nome_guia_ativa(), status_var))
-
     root.bind("<Control-z>", lambda e: desfazer(painel_guias.obter_editor_ativo()))
     root.bind("<Control-y>", lambda e: refazer(painel_guias.obter_editor_ativo()))
-
     root.bind("<Control-c>", lambda e: copiar_selecao(root, obter_text_widget()))
-
+    
 def copiar_selecao(root, text_widget):
     if text_widget is None:
         return
