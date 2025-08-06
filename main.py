@@ -23,7 +23,7 @@ from utilitarios import (
     compactar_xml, extrair_conteudo_esocial, abrir_localizador_substituir,
     copiar_texto, colar_texto, atualizar_fonte_em_editor,
     aumentar_fonte, diminuir_fonte, exportar_xml, imprimir_xml,
-    gerar_e_abrir_pdf_xml
+    gerar_e_abrir_pdf_xml, formatar_xml_editor
 )
 
 # === Importação do Icone Principal do Sistema ===
@@ -74,7 +74,7 @@ icone_aumentar_t = ctk.CTkImage(light_image=Image.open(caminho_recurso("aumentar
 icone_diminuir_t = ctk.CTkImage(light_image=Image.open(caminho_recurso("diminuir_texto.ico")), size=(24, 24))
 icone_exportar = ctk.CTkImage(light_image=Image.open(caminho_recurso("exportar.ico")), size=(24, 24))
 icone_imprimir = ctk.CTkImage(light_image=Image.open(caminho_recurso("imprimir.ico")), size=(24, 24))
-
+icone_formatar = ctk.CTkImage(light_image=Image.open(caminho_recurso("formatar.ico")), size=(28,28))
 
 # === Menu lateral ===
 menu_lateral = CTkFrame(root, width=160, corner_radius=0)
@@ -200,6 +200,12 @@ btn_refazer = CTkButton(frame_toolbar, text="", image=icone_refazer, width=38, h
                         command=lambda: refazer(painel_guias.obter_editor_ativo()))
 btn_refazer.pack(side="left", padx=5)
 Tooltip(btn_refazer, "Refazer (Ctrl+Y)")
+
+btn_formatar = CTkButton(frame_toolbar, text="", image=icone_formatar, width=38, height=38,
+                         fg_color="transparent", hover_color="#e0e0e0",
+                         command=lambda: formatar_xml_editor(painel_guias.obter_editor_ativo()))
+btn_formatar.pack(side="left", padx=5)
+Tooltip(btn_formatar, "Formatar XML (Ctrl+Shift+F)")
 
 btn_aumentar = CTkButton(frame_toolbar, text="", image=icone_aumentar_t, width=38, height=38,
                          fg_color="transparent", hover_color="#e0e0e0",

@@ -9,6 +9,7 @@ import os
 import re
 from datetime import datetime
 import xml.dom.minidom
+from xml.etree.ElementTree import ParseError
 
 # Caminho da pasta recurso
 def caminho_recurso(nome_arquivo):
@@ -317,3 +318,26 @@ def abrir_localizador_substituir(text_widget, root):
 def efeito_hover(botao, cor_hover):
     botao.bind("<Enter>", lambda e: botao.configure(fg_color=cor_hover))
     botao.bind("<Leave>", lambda e: botao.configure(fg_color="transparent"))
+    
+def restaurar_formatacao(text_widget):
+    # Só reaplica a coloração/sintaxe, sem modificar o texto
+    realcar_sintaxe_xml(text_widget)
+
+def formatar_xml_editor(editor_frame):
+    if hasattr(editor_frame, "editor_texto"):
+        text_widget = editor_frame.editor_texto
+    else:
+        text_widget = editor_frame
+
+    texto_atual = text_widget.get("1.0", "end-1c")
+    if not texto_atual.strip():
+        return  # Nada a fazer se vazio
+
+    try:
+        texto_formatado = formatar_xml(texto_atual)  # Sua função já existente para formatar XML
+    except (ParseError, Exception):
+        texto_formatado = texto_atual  # Se erro, mantém o texto atual
+
+    text_widget.delete("1.0", "end")
+    text_widget.insert("1.0", texto_formatado)
+    realcar_sintaxe_xml(text_widget)
