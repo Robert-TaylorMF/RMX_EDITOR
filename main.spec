@@ -1,11 +1,20 @@
 # -*- mode: python ; coding: utf-8 -*-
 
+import os
+from PyInstaller.utils.hooks import collect_data_files
+
+# Incluir todos os arquivos da pasta recursos (ico, png, gif etc.)
+recursos = [
+    ('recursos\\*.ico', 'recursos'),
+    ('recursos\\*.png', 'recursos'),
+    ('recursos\\*.gif', 'recursos'),
+]
 
 a = Analysis(
     ['main.py'],
     pathex=[],
     binaries=[],
-    datas=[('bases.json', '.'), ('recursos\\adicionar_banco.ico', 'recursos'), ('recursos\\atualizar.ico', 'recursos'), ('recursos\\aumentar_texto.ico', 'recursos'), ('recursos\\bancos-de-dados.ico', 'recursos'), ('recursos\\colar.ico', 'recursos'), ('recursos\\copiar.ico', 'recursos'), ('recursos\\desfazer.ico', 'recursos'), ('recursos\\diminuir_texto.ico', 'recursos'), ('recursos\\editar_banco.ico', 'recursos'), ('recursos\\exportar.ico', 'recursos'), ('recursos\\imprimir.ico', 'recursos'), ('recursos\\link.ico', 'recursos'), ('recursos\\lixeira.ico', 'recursos'), ('recursos\\loading.gif', 'recursos'), ('recursos\\logo_splash.png', 'recursos'), ('recursos\\lupa.ico', 'recursos'), ('recursos\\mais.ico', 'recursos'), ('recursos\\refazer.ico', 'recursos'), ('recursos\\remover_banco.ico', 'recursos'), ('recursos\\restaurar-backup.ico', 'recursos'), ('recursos\\restaurar.ico', 'recursos'), ('recursos\\salvar.ico', 'recursos'), ('recursos\\sobre-nos.ico', 'recursos'), ('recursos\\xmleditor.ico', 'recursos')],
+    datas=recursos,
     hiddenimports=[],
     hookspath=[],
     hooksconfig={},
@@ -14,6 +23,7 @@ a = Analysis(
     noarchive=False,
     optimize=0,
 )
+
 pyz = PYZ(a.pure)
 
 exe = EXE(
